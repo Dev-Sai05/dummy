@@ -30,3 +30,9 @@ IDENTIFICATION DIVISION.
            END-EXEC
 
            STOP RUN.
+
+
+EXEC SQL
+           CONNECT TO
+           "DRIVER={Oracle in instantclient_32};DBQ=//hostname:1521/ORCL;UID=myUser;PWD=myPass"
+       END-EXEC.
