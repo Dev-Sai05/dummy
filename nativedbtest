@@ -1,0 +1,32 @@
+IDENTIFICATION DIVISION.
+       PROGRAM-ID. ORA-TEST.
+
+       DATA DIVISION.
+       WORKING-STORAGE SECTION.
+       EXEC SQL INCLUDE SQLCA END-EXEC.
+
+       01 WS-NAME     PIC X(30).
+
+       PROCEDURE DIVISION.
+           EXEC SQL
+              CONNECT TO 'RTST_DSN' USER myuser USING mypass
+           END-EXEC
+
+           IF SQLCODE NOT = 0
+               DISPLAY "Connection failed: " SQLCODE
+               STOP RUN
+           END-IF
+
+           EXEC SQL
+              SELECT ENAME INTO :WS-NAME
+              FROM EMP
+              WHERE EMPNO = 7369
+           END-EXEC
+
+           DISPLAY "Employee Name: " WS-NAME.
+
+           EXEC SQL
+              DISCONNECT CURRENT
+           END-EXEC
+
+           STOP RUN.
