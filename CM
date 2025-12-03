@@ -1,0 +1,48 @@
+Customer Information data is continuously increasing with increasing banking customers.
+Every day new requirement arises in the bank domain. Hence, effectively developing coding techniques, monitoring and documentation has been introduced.
+ ----------------------------------------------------------
+
+India’s largest bank in terms of volume of transactions and volume of accounts of individual customers.  This organization has a history for more than 200 years and has a wide range of products and facilities for customers.
+
+--------------------------------------------------------------------------
+
+TCS is in relationship with the client from start of computerization of banking domain and has built many major projects and has gained achievements along with client. 
+--------------------------------------------------
+Naga Sai Ganesh Athukuri has completed 4 years of experience in IT and currently working as senior developer, contributed in client project in Visual Cobol Microservices.
+-> I developed a core banking microservices system built using Java → JVM COBOL → Native COBOL, deployed on Tomcat and running on Kubernetes.
+My design involves:
+-> Two databases: Day DB and Night/Ref DB, switching based on RE codes.
+-> Java connects to DBs and passes the day-DB connection down to native COBOL, where it stays open till the service stops.
+-> Java handles parallel processing using Fork/Join to split large inputs (like 100 account numbers) and call COBOL in multiple parallel tasks.
+- > Native COBOL is single-threaded, so parallel Java calls sometimes cause connection pool contention, thread blocking, and transaction failures.
+----------------------------------------------------------------------------------------------
+I’ve addressed the performance, scalability, and concurrency challenges across the Java → JVM COBOL → Native COBOL architecture, the following solution was implemented:
+ Stabilized the Java–COBOL Interaction Layer:
+ Introduced controlled parallelism from Java, instead of allowing uncontrolled Fork/Join parallel tasks to bombard COBOL, a thread-safe execution gateway was implemented so that Java still performs parallel processing, but COBOL is called in a sequential, controlled, and non-overlapping manner, preventing DB contention and COBOL-level crashes.
+This ensured that the native COBOL modules—which are single-threaded—receive requests at a sustainable rate.
+------------------------------------------------
+I’ve implemented solution delivered significant technical, operational, and business-level advantages to the client’s core banking platform.
+1.	Improved System Stability Under High Load.
+2.	Higher Throughput & Better TPS.
+3.	Reduced Database Connection Failures.
+4.	Faster Batch Completion & Fewer Night-Mode Incidents.
+5.	Improved Scalability Across Microservices.
+6.	Enhanced Observability and Faster Troubleshooting.
+7.	More Consistent and Flexible Response Handling.
+8.	Future-Ready Architecture.
+--------------------------------------------------
+The client appreciated the improvements delivered to their core banking microservices platform and acknowledged the impact across performance, stability, and operational efficiency.
+	Stabilizing critical banking services, Increasing throughput and concurrency
+	Reducing batch delays
+	Improving DB reliability
+	Enhancing observability
+	Providing long-term scalable solutions
+	They acknowledged that the improvements directly contributed to:
+	Better customer experience
+	Reduced incidents
+	Smoother operations
+	Higher confidence in modernization efforts
+------------------------------------------------------
+Verbal appreciation for on time delivery and POC of Visual Cobol Microservices
+Awards was given to TCS associates in Client town hall.
+-------------------------------------------------------
