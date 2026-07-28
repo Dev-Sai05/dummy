@@ -1,0 +1,953 @@
+<?xml version="1.0"?><!--This document has been changed--><xsl:stylesheet xmlns:xsl="http://www.w3.org/TR/WD-xsl">	<xsl:template match="/">		<HTML>			<HEAD><META http-equiv="X-UA-Compatible" content="IE=5" name=""></META>				<TITLE>\\ SCR:010450 Loans: Transaction Enquiry</TITLE><META content="BTM Architect" name="GENERATOR"> </META><META http-equiv="Content-type" content="Text/html; Charset=UTF-8" name=""> </META><META name="Creation_Date" CONTENT="Fri, 11 Jul, 2003 22:46:05"> </META><LINK href="../css/Screen.css" type="Text/css" rel="stylesheet"> </LINK><META name="Modifed_Date" CONTENT="Tue, 20 Jul, 2004 11:36:59"> </META>
+		<!-- Start of IR 23010141 -->
+		<script type="text/javascript" src="../js/PAN_Common.js"></script>
+		<!-- End of IR 23010141 -->
+</HEAD>			
+<!-- Start of IR 23010141 -->
+<!-- <BODY bgcolor="#C0C0C0" FNSType="SINGLEPAGESCREEN" Class="screen" Onload = "On_Load()"> -->
+<BODY bgcolor="#C0C0C0" FNSType="SINGLEPAGESCREEN" Class="screen" Onload = "On_Load();clearaadhaarflag();" onfocus="focusPANaadhaarflag();">
+<!-- End of IR 23010141     -->
+    <FORM class="transaction" style="WIDTH: 1600px; HEIGHT: 493px" name="F010450" method="post" FNSType="Transaction" CustomAction="DefaultTransmit" RXTransaction="010450" TXTransaction="010450">
+<!-- Start of IR 23010141 -->
+<!-- <FIELDSET class="prompt_1" style="LEFT: 21px; POSITION: absolute; TOP: 29px; HEIGHT: 21px; POSITION: absolute" FNSType="field">Account Number: <INPUT class="fieldinput_mandatory1" title="Enter 						Account Number:						" style="LEFT: 189px; WIDTH: 133px; POSITION: absolute; POSITION: absolute" tabIndex="1" maxLength="17" name="accntNumber" FNSType="fieldinput" DisplayFormat="9(17)" FieldType="Digit" Mandatory="true" RXField="accntNumber1" TXField="accntNumber1">						</INPUT>					</FIELDSET> -->
+<FIELDSET class="prompt_1" style="LEFT: 21px; POSITION: absolute; TOP: 29px; HEIGHT: 21px; POSITION: absolute" FNSType="field">Account Number: 
+<INPUT class="fieldinput_mandatory1" title="Enter 						Account Number:						" style="LEFT: 189px; WIDTH: 133px; POSITION: absolute; POSITION: absolute" tabIndex="1" maxLength="17" name="accntNumber" FNSType="fieldinput" DisplayFormat="9(17)" FieldType="Digit" Mandatory="true" RXField="accntNumber1" TXField="accntNumber1" onpropertychange="checkPANaadhaarflag();"></INPUT>
+</FIELDSET>
+<!-- End of IR 23010141 -->
+
+<!--start of ir 72522-->
+
+<!--<FIELDSET class="field" style="LEFT: 335px; WIDTH: 100px; POSITION: absolute; TOP: 55px; HEIGHT: 16px; POSITION: absolute" FNSType="field"><INPUT class="fieldinput" style="LEFT: 105px; WIDTH: 86px; POSITION: absolute; TOP: -5px; HEIGHT: 19px; POSITION: absolute" tabIndex="5" maxLength="10" size="17" name="date2" FNSType="fieldinput" DisplayFormat="dd/mm/yyyy" RXField="date2" TXField="date2"></INPUT> List Txn To Date : </FIELDSET>-->
+
+
+
+ <FIELDSET class="prompt_1" style="LEFT: 393px; WIDTH: 100px; POSITION: absolute; TOP: 55px; HEIGHT: 16px; POSITION: absolute" FNSType="field">
+					<INPUT class="fieldinput" style="LEFT: 106px; WIDTH: 90px; POSITION: absolute; TOP: 0px; HEIGHT: 19px; POSITION: absolute" tabIndex="5" maxLength="10"  size="17" name="date2" FNSType="fieldinput" FieldType="Date" TXField="date2" RXField="date2" DisplayFormat="dd/mm/yyyy">
+					</INPUT> List Txn To Date :</FIELDSET>
+
+
+</FIELDSET><FIELDSET class="field" style="LEFT: 605px; WIDTH: 100px; POSITION: absolute; TOP: 55px; HEIGHT: 16px; POSITION: absolute" FNSType="field">[DD/MM/YYYY] </FIELDSET>
+
+
+</FIELDSET><FIELDSET class="field" style="LEFT: 295px; WIDTH: 100px; POSITION: absolute; TOP: 55px; HEIGHT: 16px; POSITION: absolute" FNSType="field">[DD/MM/YYYY] </FIELDSET>
+
+<!--end of ir 72522-->
+
+
+
+
+
+
+<FIELDSET class="prompt_1" style="LEFT: 21px; POSITION: absolute; TOP: 50px; HEIGHT: 21px; POSITION: absolute" FNSType="field">List Txn From Date: <INPUT class="fieldinput" title="Enter 						List Txn From Date:						" style="LEFT: 189px; WIDTH: 70px; POSITION: absolute; POSITION: absolute" tabIndex="3" maxLength="10" name="date" FNSType="fieldinput" DisplayFormat="dd/mm/yyyy" FieldType="Date" RXField="date1" TXField="date1">						</INPUT>					</FIELDSET>
+
+
+
+
+
+
+
+<!--start of ir 72522-->
+
+<!--<BUTTON class="button" style="LEFT: 530px; WIDTH: 17px; POSITION: absolute; TOP: 50px; HEIGHT: 21px; POSITION: absolute" onclick="RequestDate(date2)" tabIndex="6" name="Txn Button" FNSType="button"><IMG style="POSITION: relative" height="15" src="../images/46.gif" width="11" border="0" name="" DESIGNTIMEURL="../images/46.gif">						</IMG>					</BUTTON>-->
+
+
+<BUTTON class="button" style="LEFT: 590px; WIDTH: 17px; POSITION: absolute; TOP: 50px; HEIGHT: 21px; POSITION: absolute" onclick="RequestDate(date2)" tabIndex="6" name="Txn Button" FNSType="button"><IMG style="POSITION: relative" height="15" src="../images/46.gif" width="11" border="0" name="" DESIGNTIMEURL="../images/46.gif">						</IMG>					</BUTTON>
+
+
+<!--end of ir 72522-->
+
+
+
+<FIELDSET class="prompt_1" style="LEFT: 21px; POSITION: absolute; TOP: 71px; HEIGHT: 21px; POSITION: absolute" FNSType="field">List Txn From Number: <INPUT class="fieldinput" title="Enter 						List Txn From Number:						" style="LEFT: 189px; WIDTH: 70px; POSITION: absolute; POSITION: absolute" tabIndex="7" maxLength="4" name="DefInteger" FNSType="fieldinput" DisplayFormat="9(4)" FieldType="UnsignedNumber" RXField="DefInteger1" TXField="DefInteger1">						</INPUT>					</FIELDSET>
+<!--IR 14763 STARTS-->					
+<FIELDSET Class="prompt_1" FNSType="combobox" PromptID="5864" Style="POSITION: absolute; LEFT: 21px; TOP: 91px; Height: 21px;">Cr./Dr.Summations:
+	<SELECT FNSType="comboboxselect" Name="yesno1" RXField="yesno1" TXField="yesno1" Class="comboboxselect" onchange="on_Change()" TabIndex="9" SelectionSet="yesno.htm" strict="True" style="LEFT: 189px;  WIDTH: 55px;  TOP: 0px" RXField="DefaultString2" TXField="DefaultString2">
+		<OPTION value="N" Selected="True">N:No
+		</OPTION>
+	</SELECT>
+	<INPUT name="yesnotext" id="yesnotext" width="0" TYPE="text" TabIndex="18" style="FONT-SIZE: 8pt; LEFT: 189px; WIDTH: 38px; COLOR: windowtext; FONT-FAMILY: MS Sans Serif; BACKGROUND-COLOR: window" title="Enter &amp;#xD;&amp;#xA;			ACCEPT OPTION:&amp;#xD;&amp;#xA;			&amp;#xD;&amp;#xA;              Y:YesN:No" />
+</FIELDSET>
+
+<FIELDSET Class="prompt_1" FNSType="combobox" PromptID="5864" Style="POSITION: absolute; LEFT: 21px; TOP: 111px; Height: 21px;">Details of Cr./Dr.transactions:
+	<SELECT FNSType="comboboxselect" Name="yesno2" RXField="yesno2" TXField="yesno2" Class="comboboxselect" onchange="on_Change()" TabIndex="10" SelectionSet="yesno.htm" strict="True" style="LEFT: 189px;  WIDTH: 55px;  TOP: 0px" RXField="DefaultString3" TXField="DefaultString3">
+		<OPTION value="N" Selected="True">N:No
+		</OPTION>
+	</SELECT>
+	<INPUT name="yesnotext" id="yesnotext" width="0" TYPE="text" TabIndex="18" style="FONT-SIZE: 8pt; LEFT: 189px; WIDTH: 38px; COLOR: windowtext; FONT-FAMILY: MS Sans Serif; BACKGROUND-COLOR: window" title="Enter &amp;#xD;&amp;#xA;			ACCEPT OPTION:&amp;#xD;&amp;#xA;			&amp;#xD;&amp;#xA;              Y:YesN:No" />
+</FIELDSET>
+<!--IR 14763 ENDS-->
+<!-- start of ir 74714 -->
+<!--<FIELDSET class="prompt_1" style="LEFT: 371px; POSITION: absolute; TOP: 75px; HEIGHT: 21px; POSITION: absolute" FNSType="combobox">Txn Type: <SELECT class="comboboxselect" tabIndex="8" name="DefInteger02" FNSType="comboboxselect" DisplayFormat="99" FieldType="UnsignedNumber" RXField="DefInteger2" TXField="DefInteger2" style="LEFT: 71px; WIDTH: 260px; POSITION: absolute; POSITION: absolute" SelectionSet="LNTXType.htm">							<OPTION value="99" selected="-1">99:All Financial Transactions                                                        </OPTION>							</SELECT></FIELDSET>	-->
+<FIELDSET class="prompt_1" style="LEFT: 371px; POSITION: absolute; TOP: 75px; HEIGHT: 21px; POSITION: absolute" FNSType="field">Txn Type:
+<INPUT class="AutoComplete_nonMandatory" style="LEFT: 120px; WIDTH: 200px; POSITION: absolute; TOP: 0px" tabIndex="8" id="DefInteger02" FNSType="fieldinput" TXField="DefInteger2" RXField="DefInteger2" IsAutocomplete="Y" value="99:All Financial Transactions" AutocompleteTarget="LNTXType.htm"  FieldType="autoValue"></INPUT><BUTTON class="AutoComplete_button" style="LEFT: 305px;  WIDTH: 17px; HEIGHT: 19px; POSITION: absolute;  TOP: 0px" onclick="showAutoDataBtn(DefInteger02)" tabIndex="" name="DefInteger02Btn" FNSType="button"><IMG style="POSITION: relative" height="15" src="../images/autoPic.png" width="15" border="0" name="" DESIGNTIMEURL="../images/autoPic.png"></IMG></BUTTON></FIELDSET>
+<!-- end of ir 74714 -->
+
+<FIELDSET class="label_4" style="LEFT: 21px; POSITION: absolute; TOP: 140px; HEIGHT: 21px; POSITION: absolute" FNSType="field">Transaction Details </FIELDSET>					<DIV id="grid" style="LEFT: -5px; WIDTH: 1400px; POSITION: absolute; TOP: 160px; HEIGHT: 303px" FNSType="grid" RXTransaction="010450" TXTransaction="" border="1" frame="box" NAME="" rules="all"><DIV style="OVERFLOW: visible; WIDTH: 1406px; POSITION: static; HEIGHT: 71px"><TABLE class="grid" id="T010450" style="WIDTH: 1208px; POSITION: static; HEIGHT: 52px" cellSpacing="1" cellPadding="1" rules="all" border="1" frame="box" FNSType="gridtable" RXTransaction="010450" name="T010450" RXCollection="Collection1"><COLGROUP><COL align="left" width="1400">									</COL></COLGROUP><THEAD><TR><TH id="H0" align="left" FNSType="gridcolumn" name="Transactions"><PRE><FONT face="Times New Roman" size="2" weight="Bold">Sl#              Type Trn Cde  Post Date   Tran Date            Jrnl No                            Amount	              Balance 	                     Arrears			                                                                                Old Br: New Br: User: Brch:Termnl:Chq No.         </FONT></PRE></TH></TR><TR><TH id="H0" align="left" FNSType="gridcolumn" name="Transactions"><PRE><FONT face="Times NEw Roman" size="2">          Old Prd: New Prd               Old Ac/Cat/Seg              New Ac/Cat/Seg      Ldg Cde  Sub Ldg Cde                                             	TXN-Desc                                       		MsgNo: Msg/Reason:                                              	Addl/Msg/Reason</FONT></PRE></TH></TR></THEAD><TBODY class="Fixed"><TR><TD class="gridrow_fixedfont_010450" id="H1" FNSType="gridrow" RXField="DefaultString1" name="Transactions">										</TD></TR></TBODY></TABLE></DIV></DIV>
+<!-- IR 14763 STARTS-->
+<!--FOR PADDING DOWN TRANSMIT AND CLOSE BUTTON-->
+<!-- Start of IR 72522-->
+<!--<BUTTON class="button" style="LEFT: 344px; WIDTH: 113px; POSITION: absolute; TOP: 490px; HEIGHT: 25px; POSITION: absolute" accessKey="T" onclick="ClearGrids(); SendTransaction()" tabIndex="11" name="Transmit" FNSType="button" value="&lt;U&gt;T&lt;/U&gt;ransmit"><U>T</U>ransmit</BUTTON>-->
+<BUTTON class="button" style="LEFT: 344px; WIDTH: 113px; POSITION: absolute; TOP: 490px; HEIGHT: 25px; POSITION: absolute" accessKey="T" onclick="if(chkDateDiff()){ClearGrids(); SendTransaction()}" tabIndex="11" name="Transmit" FNSType="button" value="&lt;U&gt;T&lt;/U&gt;ransmit"><U>T</U>ransmit</BUTTON>
+<!-- End of IR 72522-->
+<BUTTON class="button" style="LEFT: 466px; WIDTH: 113px; POSITION: absolute; TOP: 490px; HEIGHT: 25px; POSITION: absolute" accessKey="C" onclick="CloseScreen()" tabIndex="12" name="Close" FNSType="button" value="&lt;U&gt;C&lt;/U&gt;lose"><U>C</U>lose</BUTTON><BUTTON class="button" style="LEFT: 347px; WIDTH: 56px; POSITION: absolute; TOP: 29px; HEIGHT: 23px; POSITION: absolute" accessKey="S" onclick="OpenAcctSearchOnly(accntNumber, null)" tabIndex="2" name="Search" FNSType="button" value="&lt;U&gt;S&lt;/U&gt;earch"><U>S</U>earch</BUTTON><BUTTON class="button" style="LEFT: 281px; WIDTH: 17px; POSITION: absolute; TOP: 50px; HEIGHT: 21px; POSITION: absolute" onclick="RequestDate(date)" tabIndex="4" name="" FNSType="button" value="&lt;IMG style=&quot;POSITION: relative&quot; height=15 src=&quot;../images/46.gif&quot; width=11 border=0 name=&quot;&quot; DESIGNTIMEURL=&quot;../images/46.gif&quot;&gt; &lt;/IMG&gt;"><IMG style="POSITION: relative" height="15" src="../images/46.gif" width="11" border="0" name="" DESIGNTIMEURL="../images/46.gif">						</IMG>					</BUTTON>				</FORM>
+<!-- start of ir 74714 -->
+<!--Start of IR 23010141 -->
+
+<FIELDSET class="field" style="POSITION: absolute;display:none; HEIGHT: 13px; POSITION: absolute" FNSType="field">
+    <INPUT class="fieldinput" style="POSITION: absolute; TOP:0px; HEIGHT: 19px; POSITION: absolute" name="panadharlinkflag" tabIndex="" FNSType="fieldinput" ID="panadharlinkflag"></INPUT>
+</FIELDSET>
+<FIELDSET class="field" style="POSITION: absolute;display:none; HEIGHT: 13px; POSITION: absolute" FNSType="field">
+    <INPUT class="fieldinput" style="POSITION: absolute; TOP:50px; HEIGHT: 19px; POSITION: absolute" name="CuStNumHiddenString" tabIndex="" FNSType="fieldinput" ID="CuStNumHiddenString"></INPUT>
+</FIELDSET>
+<div id="alertPanSeg" style="top:100px;left:350px; position:absolute;height:130px; width:270px;box-sizing:border-box;">
+<div class="col col-md-6" style="height:130px; width:270px;box-sizing:border-box;box-shadow:5px gray;position:absolute;align-items: center;justify-content: center; border:3px solid black;background-color:white;cursor:pointer;display: none" id="alertPan" >
+    <div style="height:70px; width:260px;padding-top:10px;padding-left:20px; background-color:#ffebe6;position:static">
+        <span>
+            <b>To Update PAN - AADHAAR<br></b>
+            <b>Linking Status, Click on Update</b><br>
+            <b></b>
+        </span>
+        <br>
+    </div>
+    <div style="padding:10px 10px 10px 10px; top:70px;background-color:#f0f0f0;height:53px; width:263px;position:static">
+        <button FNSType="button" class="button" style="float:left;left:15px;WIDTH: 113px;HEIGHT: 25px;"name="UpdateStatus" id="UpdateStatus" value="Update" onclick="clickaadhaar()" accesskey="U"><strong><U>U</U>pdate</strong></button>
+        <button FNSType="button" class="button" style="left:135px;WIDTH: 113px;HEIGHT: 25px;" name="closeUpdate" id="closeUpdate" value="Close" onclick="closePanSeg()" accesskey="l"><strong>C<U>l</U>ose</strong></button>
+    </div>
+</div>
+</div>
+
+<!-- End of IR 23010141 -->
+		<link rel="stylesheet" href="../css/jquery-ui.min.css" />
+<!--Start of IR 22070029 (CSR 2020 : Jquery Update)-->
+		<script type="text/javascript" src="../js/CBSQuery.js"></script>
+		<script type="text/javascript" src="../js/CBSjquery-ui.min_2.js"></script>
+<!--End of IR 22070029 (CSR 2020 : Jquery Update)-->
+		<!-- end of ir 74714 -->
+		</BODY>
+<!--IR 14763 STARTS-->
+<script type="text/javascript" language="javascript">
+	function on_Change()
+	{
+		if( window.document.all("yesno1").value == 'Y' || window.document.all("yesno2").value == 'Y' )
+		{
+			//start of ir 74714
+			//window.document.all("DefInteger02").value = "99";
+			window.document.all("DefInteger02").value = "99:All Financial Transactions";
+			//end of ir 74714			
+			window.document.all("DefInteger02").ReadOnly = "True";
+			//start of ir 74714
+			window.document.all("DefInteger02Btn").disabled=true
+			//end of ir 74714
+		}
+		else
+		{
+			//start of ir 74714
+			//window.document.all("DefInteger02").value = "99";
+			window.document.all("DefInteger02").value = "99:All Financial Transactions";
+			//end of ir 74714
+			window.document.all("DefInteger02").ReadOnly = "False";
+			//start of ir 74714
+			window.document.all("DefInteger02Btn").disabled=false
+			//end of ir 74714
+		}
+	}
+
+        function On_Load()
+        {
+		if( window.document.all("yesno1").value == 'Y' || window.document.all("yesno2").value == 'Y' )
+		{
+			//start of ir 74714
+			//window.document.all("DefInteger02").value = "99";
+			window.document.all("DefInteger02").value = "99:All Financial Transactions";
+			//end of ir 74714
+			window.document.all("DefInteger02").ReadOnly = "True";
+			//start of ir 74714
+			window.document.all("DefInteger02Btn").disabled=true
+			//end of ir 74714
+		}
+		else
+		{
+			
+			window.document.all("DefInteger02").ReadOnly = "False";
+			//start of ir 74714
+			window.document.all("DefInteger02Btn").disabled=false
+			//end of ir 74714
+		}
+	}
+
+	// Start of IR 72522
+
+function Checktodate1()
+			  {   
+			  varData = window.document.all("date2").value
+        //Some examples of DisplayFormat: "dd/mm/yyyy", "mm/dd/yy"
+        var sDisplayFormat = window.document.all("date2").attributes("DisplayFormat").value        
+        //sDisplayFormat = "mmm/dd/yy"
+
+        if (sDisplayFormat == null || sDisplayFormat == "")
+            sDisplayFormat = "dd/mm/yyyy"
+            
+        
+        if (varData.search("/") == -1)
+		   {
+		   if (varData.length != 0)
+		   {
+		    if(varData.length == 6 || varData.length == 8)
+		      {		      
+		      		     
+		   varData = varData.substring(0,2) + "/" + varData.substring(2,4) + "/" +  varData.substring(4,varData.length)
+		      
+		      }
+		    
+		    else
+			{
+		     alert("Please enter a valid TODATE");
+			 return false;
+            }
+           }
+		   }
+        
+
+       
+        if (Number(varData.slice(0,3)))
+        {
+            sDisplayFormat = "yyyy/mm/dd"
+            sDisplayFormat = ExpandFormat(sDisplayFormat)
+        }
+        else            
+            sDisplayFormat = "dd/mm/yyyy"
+
+        var varRawData = varData.replace(/[ \/\-\.\,]/g, "")
+        if (varRawData.replace(/00/g, "") == "")
+            return varRawData
+        else
+        if (varRawData.replace(/99/g, "") == "")
+            return varRawData
+
+        if (varData.length > sDisplayFormat.length)
+		{
+            alert("The length of data : " + varData + " you entered is greater than that allowed.")
+			return false;
+			}
+        else
+        {
+            //parse the display format
+            var sChar
+            var nPos = 0
+
+            var sMatches = new Array(3)
+            var n = 0
+
+            var sRegExp
+            var oRegExp
+
+            for (i = 0; i < sDisplayFormat.length; i++)
+            {
+                sChar = sDisplayFormat.substr(i, 1)
+                switch (sChar)
+                {
+                    case "/":
+                        sMatches[n] = sDisplayFormat.substring(nPos, i)
+                        nPos = i + 1
+                        n++
+                        break
+                }
+            }
+            
+            sMatches[n] = sDisplayFormat.substring(nPos, i)
+            n++
+            
+            sRegExp = "^"
+            for (i = 0; i < n; i++)
+            {
+                sRegExp = sRegExp + "([A-Za-z0-9]+)"
+                if (i == n - 1)
+                    sRegExp = sRegExp + "$"
+                else
+                    sRegExp = sRegExp + "[ \\/\\-\\.\\,]"
+            }
+            
+            oRegExp = new RegExp(sRegExp, "")
+            
+            if (varData.search(oRegExp) == -1)
+			{
+                alert("Please enter a valid TODATE")
+				return false;
+				}
+            else
+            {
+                var sSubPart
+
+                var nDay
+                var nMonth
+                var nYear
+
+                var nMonthIndex = new Object()
+                
+                nMonthIndex["jan"] = 1
+                nMonthIndex["feb"] = 2
+                nMonthIndex["mar"] = 3
+                nMonthIndex["apr"] = 4
+                nMonthIndex["may"] = 5
+                nMonthIndex["jun"] = 6
+                nMonthIndex["jul"] = 7
+                nMonthIndex["aug"] = 8
+                nMonthIndex["sep"] = 9
+                nMonthIndex["oct"] = 10
+                nMonthIndex["nov"] = 11
+                nMonthIndex["dec"] = 12
+                
+                var nDaysInMonth = new Array(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+
+                for (i = 0; i < n; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            sSubPart = RegExp.$1
+                            break
+                        case 1:
+                            sSubPart = RegExp.$2
+                            break
+                        case 2:
+                            sSubPart = RegExp.$3
+                            break
+                    }
+                
+                    switch (sMatches[i])
+                    {
+                        case "d":
+                        case "dd":
+                            try
+                            {
+                                nDay = Number(sSubPart)
+                            }
+                            catch(e)
+                            {
+                                alert("Not a valid day in TODATE.")
+								return false;
+                            }
+                            if (nDay == null)
+							{
+                                alert("Not a valid day in TODATE.")
+								return false;
+								}
+                            break
+                        case "m":
+                        case "mm":
+                        case "mmm":
+                            try
+                            {
+                                if (sMatches[i] == "mmm")
+                                    nMonth = nMonthIndex[sSubPart.toLowerCase()]
+                                else
+                                    nMonth = Number(sSubPart)
+                            }
+                            catch(e)
+                            {
+                                alert("Not a valid month in TODATE.")
+								return false;
+                            }
+                            if (nMonth == null)
+                                alert("Not a valid month.")
+                            if (nMonth >= 1 && nMonth <= 12)
+                                ;//ok
+                            else
+							{
+                                alert("Not a valid month in TODATE.")
+								return false;
+								}
+                            break
+                        case "yy":
+                        case "yyyy":
+                            try
+                            {
+                                nYear = Number(sSubPart)
+                            }
+                            catch(e)
+                            {
+                                alert("Not a valid year in TODATE.")
+								return false;
+                            }
+                            if (nYear == null)
+							{
+                                alert("Not a valid year in TODATE.")
+								return false; 
+							}
+                            if (nYear >= 0 && nYear <= 99)
+                            {
+                                var nCenturyYear = (new Date()).getFullYear()
+                                nCenturyYear = nCenturyYear - nCenturyYear % 100
+                                if (nYear > 50)
+                                    nYear += (nCenturyYear - 100)
+                                else
+                                    nYear += nCenturyYear
+                            }
+
+                            if (nYear >= 1000 && nYear <= 9999)
+                                ;//ok
+                            else
+							{
+                                alert("Not a valid year in TODATE.")
+								return false;
+								}
+                            break
+                        default:
+                            alert("Unrecognized date format in TODATE.")
+							return false;
+                            break
+                    }
+                }
+
+                var nTempYear
+                var nTempMonth
+                var bLeapYear
+
+                if (nYear == null)
+                    nTempYear = (new Date()).getFullYear()
+                else
+                    nTempYear = nYear
+
+                if (nMonth == null)
+                    nTempMonth = (new Date()).getMonth() + 1
+                else
+                    nTempMonth = nMonth
+
+                if (nTempYear % 400 == 0)
+                    bLeapYear = true
+                else
+                if (nTempYear % 100 == 0)
+                    bLeapYear = false
+                else
+                if (nTempYear % 4 == 0)
+                    bLeapYear = true
+                else
+                    bLeapYear = false
+                
+                if (bLeapYear)
+                    nDaysInMonth[2]++
+
+                if (nDay != null)
+                {
+                    if (nDay >= 1 && nDay <= nDaysInMonth[nMonth])
+                        ;//ok
+                    else
+					{
+                        alert("Not a valid day in TODATE.")
+						return false;
+                }
+				}
+                
+                var varDate = new Array()
+                var n = 0
+                if (nDay != null)
+                {
+					if (nDay >=1 && nDay < 10)
+					{
+						nDay = "0" + nDay;
+					}
+                    varDate[n] = nDay
+                    n++
+                }
+                if (nMonth != null)
+                {
+					if (nMonth >=1 && nMonth < 10)
+					{
+						nMonth = "0" + nMonth;
+					}
+                    varDate[n] = nMonth
+                    n++
+                }
+                if (nYear != null)
+                {
+                    varDate[n] = nYear
+                    n++
+                }
+                return varDate.join("/")
+            }
+			return true;
+        }
+			  }
+
+
+
+  function Checkfromdate1()
+			  {   
+			  varData = window.document.all("date").value
+        //Some examples of DisplayFormat: "dd/mm/yyyy", "mm/dd/yy"
+        var sDisplayFormat = window.document.all("date").attributes("DisplayFormat").value        
+        //sDisplayFormat = "mmm/dd/yy"
+
+        if (sDisplayFormat == null || sDisplayFormat == "")
+            sDisplayFormat = "dd/mm/yyyy"
+            
+        
+        if (varData.search("/") == -1)
+		   {
+		   if (varData.length != 0)
+		   {
+		    if(varData.length == 6 || varData.length == 8)
+		      {		      
+		      		     
+		   varData = varData.substring(0,2) + "/" + varData.substring(2,4) + "/" +  varData.substring(4,varData.length)
+		      
+		      }
+		    
+		    else
+			{
+		     alert("Please enter a valid FROMDATE");
+			 return false;
+            }
+           }
+		   }
+        
+
+        //Check if it is a reverse date ie. Chinese yyyy/mm/dd
+        //This means the first 4 chars of vardata have to be digits
+        if (Number(varData.slice(0,3)))
+        {
+            sDisplayFormat = "yyyy/mm/dd"
+            sDisplayFormat = ExpandFormat(sDisplayFormat)
+        }
+        else            
+            sDisplayFormat = "dd/mm/yyyy"
+
+        var varRawData = varData.replace(/[ \/\-\.\,]/g, "")
+        if (varRawData.replace(/00/g, "") == "")
+            return varRawData
+        else
+        if (varRawData.replace(/99/g, "") == "")
+            return varRawData
+
+        if (varData.length > sDisplayFormat.length)
+		{
+            alert("The length of data : " + varData + " you entered is greater than that allowed.")
+			return false;
+			}
+        else
+        {
+            //parse the display format
+            var sChar
+            var nPos = 0
+
+            var sMatches = new Array(3)
+            var n = 0
+
+            var sRegExp
+            var oRegExp
+
+            for (i = 0; i < sDisplayFormat.length; i++)
+            {
+                sChar = sDisplayFormat.substr(i, 1)
+                switch (sChar)
+                {
+                    case "/":
+                        sMatches[n] = sDisplayFormat.substring(nPos, i)
+                        nPos = i + 1
+                        n++
+                        break
+                }
+            }
+            
+            sMatches[n] = sDisplayFormat.substring(nPos, i)
+            n++
+            
+            sRegExp = "^"
+            for (i = 0; i < n; i++)
+            {
+                sRegExp = sRegExp + "([A-Za-z0-9]+)"
+                if (i == n - 1)
+                    sRegExp = sRegExp + "$"
+                else
+                    sRegExp = sRegExp + "[ \\/\\-\\.\\,]"
+            }
+            
+            oRegExp = new RegExp(sRegExp, "")
+            
+            if (varData.search(oRegExp) == -1)
+			{
+                alert("Please enter a valid FROMDATE")
+				return false;
+				}
+            else
+            {
+                var sSubPart
+
+                var nDay
+                var nMonth
+                var nYear
+
+                var nMonthIndex = new Object()
+                
+                nMonthIndex["jan"] = 1
+                nMonthIndex["feb"] = 2
+                nMonthIndex["mar"] = 3
+                nMonthIndex["apr"] = 4
+                nMonthIndex["may"] = 5
+                nMonthIndex["jun"] = 6
+                nMonthIndex["jul"] = 7
+                nMonthIndex["aug"] = 8
+                nMonthIndex["sep"] = 9
+                nMonthIndex["oct"] = 10
+                nMonthIndex["nov"] = 11
+                nMonthIndex["dec"] = 12
+                
+                var nDaysInMonth = new Array(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
+
+                for (i = 0; i < n; i++)
+                {
+                    switch (i)
+                    {
+                        case 0:
+                            sSubPart = RegExp.$1
+                            break
+                        case 1:
+                            sSubPart = RegExp.$2
+                            break
+                        case 2:
+                            sSubPart = RegExp.$3
+                            break
+                    }
+                
+                    switch (sMatches[i])
+                    {
+                        case "d":
+                        case "dd":
+                            try
+                            {
+                                nDay = Number(sSubPart)
+                            }
+                            catch(e)
+                            {
+                                alert("Not a valid day in FROMDATE.")
+								return false;
+                            }
+                            if (nDay == null)
+							{
+                                alert("Not a valid day in FROMDATE.")
+								return false;
+								}
+                            break
+                        case "m":
+                        case "mm":
+                        case "mmm":
+                            try
+                            {
+                                if (sMatches[i] == "mmm")
+                                    nMonth = nMonthIndex[sSubPart.toLowerCase()]
+                                else
+                                    nMonth = Number(sSubPart)
+                            }
+                            catch(e)
+                            {
+                                alert("Not a valid month in FROMDATE.")
+								return false;
+                            }
+                            if (nMonth == null)
+                                alert("Not a valid month.")
+                            if (nMonth >= 1 && nMonth <= 12)
+                                ;//ok
+                            else
+							{
+                                alert("Not a valid month in FROMDATE.")
+								return false;
+								}
+                            break
+                        case "yy":
+                        case "yyyy":
+                            try
+                            {
+                                nYear = Number(sSubPart)
+                            }
+                            catch(e)
+                            {
+                                alert("Not a valid year in FROMDATE.")
+								return false;
+                            }
+                            if (nYear == null)
+							{
+                                alert("Not a valid year in FROMDATE.")
+								return false; 
+							}
+                            if (nYear >= 0 && nYear <= 99)
+                            {
+                                var nCenturyYear = (new Date()).getFullYear()
+                                nCenturyYear = nCenturyYear - nCenturyYear % 100
+                                if (nYear > 50)
+                                    nYear += (nCenturyYear - 100)
+                                else
+                                    nYear += nCenturyYear
+                            }
+
+                            if (nYear >= 1000 && nYear <= 9999)
+                                ;//ok
+                            else
+							{
+                                alert("Not a valid year in FROMDATE.")
+								return false;
+								}
+                            break
+                        default:
+                            alert("Unrecognized date format in FROMDATE.")
+							return false;
+                            break
+                    }
+                }
+
+                var nTempYear
+                var nTempMonth
+                var bLeapYear
+
+                if (nYear == null)
+                    nTempYear = (new Date()).getFullYear()
+                else
+                    nTempYear = nYear
+
+                if (nMonth == null)
+                    nTempMonth = (new Date()).getMonth() + 1
+                else
+                    nTempMonth = nMonth
+
+                if (nTempYear % 400 == 0)
+                    bLeapYear = true
+                else
+                if (nTempYear % 100 == 0)
+                    bLeapYear = false
+                else
+                if (nTempYear % 4 == 0)
+                    bLeapYear = true
+                else
+                    bLeapYear = false
+                
+                if (bLeapYear)
+                    nDaysInMonth[2]++
+
+                if (nDay != null)
+                {
+                    if (nDay >= 1 && nDay <= nDaysInMonth[nMonth])
+                        ;//ok
+                    else
+					{
+                        alert("Not a valid day in FROMDATE.")
+						return false;
+                }
+				}
+                
+                var varDate = new Array()
+                var n = 0
+                if (nDay != null)
+                {
+					if (nDay >=1 && nDay < 10)
+					{
+						nDay = "0" + nDay;
+					}
+                    varDate[n] = nDay
+                    n++
+                }
+                if (nMonth != null)
+                {
+					if (nMonth >=1 && nMonth < 10)
+					{
+						nMonth = "0" + nMonth;
+					}
+                    varDate[n] = nMonth
+                    n++
+                }
+                if (nYear != null)
+                {
+                    varDate[n] = nYear
+                    n++
+                }
+                return varDate.join("/")
+            }
+			return true;
+        }
+			  }
+
+
+	 function chkDateDiff()
+	{     
+         
+if(window.document.all("date").value =="" && window.document.all("date2").value !="" )
+{
+         alert("Please enter From date");
+		 return false;
+
+}
+else if(window.document.all("date").value !="" && window.document.all("date2").value =="")
+{
+  alert("Please enter To date");
+		 return false;
+}
+else if(window.document.all("date").value !="" && window.document.all("date2").value !="")
+{
+		
+		var fromarr=new Array(3)
+		var toarr=new Array(3)
+
+
+		fromarr=window.document.all("date").value.split("/")   //from date
+
+		toarr=window.document.all("date2").value.split("/")
+
+
+		
+		
+
+
+		if(fromarr.length <3)
+		  {
+		    alert("Please enter a valid From date")
+return false;
+		  
+		  }
+
+		  if(toarr.length <3)
+		  {
+		    alert("Please enter a valid To date");
+			return false;
+		  
+		  }
+
+
+		  if(fromarr[2] <1000)
+		{
+		     alert("Please enter a valid from date year");
+			 return false;
+		 
+		}
+
+		if(toarr[2] <1000)
+		{
+		     alert("Please enter a valid to date year");
+			 return false;
+		 
+		}
+
+		
+		
+		
+		
+		
+		
+		
+		
+		var t1= window.document.all("date").value;   //date1 from date
+		var t2= window.document.all("date2").value;   //date2 todate   
+		var hdate = new String;
+   try
+	{
+		hostDate = window.frameElement.document.body.GetUserInfo("HostDate");
+	}
+	catch(e)
+	{
+		hostDate = window.dialogArguments.parentElement.GetUserInfo("HostDate");
+	}
+		var one_day=1000*60*60*24; 
+		var one_year = 365 * 24 * 60 * 60 * 1000;
+
+		var x=t1.split("/"); 
+		var y=t2.split("/");
+		var z=hostDate.split("/");
+		 
+		var date1=new Date(x[2],(x[1]-1),x[0]);  
+		var date2=new Date(y[2],(y[1]-1),y[0]);
+		var hdate=new Date(z[2],(z[1]-1),z[0]);
+
+		var Diff=Math.ceil((date2.getTime()-date1.getTime())/(one_year));
+		var Diff1= Math.ceil((hdate.getTime()-date1.getTime())/(one_day));
+		var Diff2= Math.ceil((hdate.getTime()-date2.getTime())/(one_day));
+		
+		if(window.document.all("date2").value!="" && window.document.all("date").value=="")
+		   {
+			 alert("Please Enter from date");
+			 return false;
+		   }
+		else if(window.document.all("date2").value=="" && window.document.all("date").value!="")
+		   {
+			 alert("Please Enter To date");
+			 return false;
+		   }
+		   else
+		   {
+		   }
+		
+		if(Diff1<0)
+		{
+		alert("From date cannot be a future date");
+		return false;
+		}else if(Diff2<0)
+		{
+		alert("To date cannot be a future date");
+		return false;
+		}  
+
+		if(Diff1<Diff2)
+		{
+		alert("From date cannot be greater than to date")
+		return false;
+		
+		}
+		
+     
+	 //x from date
+	 //y todate
+		if(y[2]-x[2] >2)
+		  {    
+		  alert("Date Diff Cannot be greater than 2 years");
+		       return false;
+			   
+		  }
+		  else if(y[2]-x[2]==2)
+		  {
+		      
+		           if(y[1] - x[1] >0)
+				   {
+				     alert("Date Diff Cannot be greater than 2 years");
+				   return false;
+				   }
+				     
+					 else if (y[1]-x[1] ==0)
+					 {
+                             if(y[0]-x[0]<0)
+							   {
+							      return true;
+							   
+							   }
+							   else
+							   {
+							    alert("Date Diff Cannot be greater than 2 years");
+							   return false;
+							   }
+					 }
+					 else
+					 return true;
+		  
+		  
+		  }
+		  else
+		  {
+
+ 
+		  return true;
+		}
+		}
+		else
+		{   
+		Checkfromdate1();
+		Checktodate1();
+		
+		return true;
+		}
+	          	
+	
+	}
+// End of IR 72522
+</script>
+<!--IR 14763 ENDS-->
+<!-- start of ir 74714 -->
+<!--</HTML>	</xsl:template></xsl:stylesheet>-->
+	<!-- end of ir 74714 -->
+	</HTML>	</xsl:template></xsl:stylesheet>
+
+
