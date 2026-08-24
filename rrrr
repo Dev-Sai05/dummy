@@ -1,0 +1,142 @@
+        IDENTIFICATION DIVISION.
+        PROGRAM-ID. READED1.
+        AUTHOR. SALIL CHITRE.
+        DATE-WRITTEN. SEP 15, 2003.
+      /
+        ENVIRONMENT DIVISION.
+        INPUT-OUTPUT SECTION.
+        FILE-CONTROL.
+             SELECT ED1PARAM ASSIGN TO "ED1PARAM"
+                    FILE STATUS IS ED1-STATUS
+                    ORGANIZATION IS RELATIVE.
+      /
+        DATA DIVISION.
+        FILE SECTION.
+        FD  ED1PARAM.
+        01  ED1P-REC.
+            COPY ED1PARM IN LIBRYMIS.
+
+        WORKING-STORAGE SECTION.
+        01 WA-TRAN-CODE              PIC 9(5).
+        01 PUAREA.
+           03  FIELD-A               PIC X(32).
+           03  FIELD-B               PIC X(4).
+        01 WA-EDIT-MASK.
+           03  WA-INPUT-PARAM-TABLE  PIC X
+                                     OCCURS 32 TIMES.
+        01  ED1-STATUS               PIC X(2) VALUE SPACES.
+        01  WA-TEMP                  PIC X.        
+        01  WA-STATUS                PIC X(8).
+        
+            COPY MISERR01 IN LIBRYMIS.
+      / 
+        PROCEDURE DIVISION.
+        
+        A000-START.
+        
+        DISPLAY "ENTER TRANSACTION NUMBER: ".
+        ACCEPT WA-TRAN-CODE.
+        
+        OPEN INPUT ED1PARAM.
+        IF ED1-STATUS NOT = '00'
+           DISPLAY "SORRY! CAN NOT OPEN ED1PARAM FLAT FILE"
+           DISPLAY "FILE STATUS IS " ED1-STATUS
+           GO TO A100-EXIT
+        END-IF.
+        
+      /
+        LOOP1.
+        
+        READ ED1PARAM
+                     AT END  
+                     DISPLAY "NO SUCH TRANSACTION CODE!"
+                     GO TO A100-EXIT.
+          IF EDIT0401-TRAN-CODE = WA-TRAN-CODE
+             IF EDIT0401-STATUS = 0
+                MOVE "ACTIVE" TO WA-STATUS
+             ELSE
+                MOVE "INACTIVE" TO WA-STATUS
+             END-IF
+             
+             MOVE EDIT0401-EDIT-MASK TO FIELD-B
+             CALL "UT0022" USING PUAREA
+             MOVE FIELD-A TO WA-EDIT-MASK
+             DISPLAY "TRAN CODE: " EDIT0401-TRAN-CODE ": " 
+                      EDIT0401-ENQUIRY-DESC
+                      "WITH STATUS : " WA-STATUS
+             DISPLAY "  "
+             DISPLAY "1)No Process: "   WA-INPUT-PARAM-TABLE (1)
+              "   2)Fetch Mast: " WA-INPUT-PARAM-TABLE (2)
+             "    3)Bal Check/Chk Appv: " 
+                                         WA-INPUT-PARAM-TABLE (3)
+             "  4)Repayment: "    WA-INPUT-PARAM-TABLE (4)
+             DISPLAY " "
+             DISPLAY "5)Advance: "      WA-INPUT-PARAM-TABLE (5)
+             "      6)No Passbook: "  WA-INPUT-PARAM-TABLE (6)
+             "   7)Correction: "   WA-INPUT-PARAM-TABLE (7)
+             "          8)Backdating: "   WA-INPUT-PARAM-TABLE (8)
+             DISPLAY "  "
+             DISPLAY "9)No Response: "  WA-INPUT-PARAM-TABLE (9)
+             " 10)Cheque: "       WA-INPUT-PARAM-TABLE (10)
+             "       11)Bypass A/c Type: " WA-INPUT-PARAM-TABLE (11)
+             "    12)Bypass Stops: "    WA-INPUT-PARAM-TABLE (12) 
+             DISPLAY " "
+             DISPLAY "13)Bpass Hold: "     WA-INPUT-PARAM-TABLE (13)
+             " 14)User Tot: "     WA-INPUT-PARAM-TABLE (14)
+             "     15)Restart: "         WA-INPUT-PARAM-TABLE (15)
+             "           "
+             " 16)Pre-image: "       WA-INPUT-PARAM-TABLE (16)
+             
+      *      DISPLAY "***PRESS ENTER TO MOVE FORWARD****"
+      *      ACCEPT WA-TEMP
+             
+             DISPLAY "  "
+
+             DISPLAY "17)Auth/Appv: " 
+                                            WA-INPUT-PARAM-TABLE (17)
+              "  18)Dummy/Comm: " 
+                                            WA-INPUT-PARAM-TABLE (18)
+              "   19)Multi Ac/Std or: " 
+                                            WA-INPUT-PARAM-TABLE (19)
+              "    20)Dummy: "           WA-INPUT-PARAM-TABLE (20)
+             DISPLAY "  "
+             DISPLAY "21)Npb Updt: "      WA-INPUT-PARAM-TABLE (21)
+              "   22)Loans Track: " 
+                                            WA-INPUT-PARAM-TABLE (22)
+              "  23)Non Financial: "    WA-INPUT-PARAM-TABLE (23)
+              "      24)New Accts: "    WA-INPUT-PARAM-TABLE (24)
+             DISPLAY " "
+             DISPLAY "25)Discharge: " 
+                                            WA-INPUT-PARAM-TABLE (25)
+              "  26)Enq Type: "    WA-INPUT-PARAM-TABLE (26)
+              "     27)No Loan Tran: " 
+                                            WA-INPUT-PARAM-TABLE (27)
+              "       28)Multi Type: "      WA-INPUT-PARAM-TABLE (28)
+             DISPLAY "  "
+             DISPLAY "29)Transfer: "   WA-INPUT-PARAM-TABLE (29)
+              "   30)ATM Type: "        WA-INPUT-PARAM-TABLE (30)
+              "     31)No C/D Frmt: "  WA-INPUT-PARAM-TABLE (31)
+              "        32)Acct Lock: "    WA-INPUT-PARAM-TABLE (32)
+             DISPLAY "  "
+             DISPLAY "Transaction Sign: " EDIT0401-SIGN 
+             DISPLAY "Field Type: "       EDIT0401-FIELD-TYPE
+             DISPLAY "Night Enable: "     EDIT0401-NIGHT-ENABLE-FLAG
+            GO TO A100-EXIT
+          ELSE
+          GO TO LOOP1
+          END-IF.
+
+        A100-EXIT.
+        CLOSE ED1PARAM.
+        DISPLAY " ".
+        DISPLAY "DO YOU WANT TO CONTINUE (Y:YES)".
+        ACCEPT WA-TEMP.
+        IF WA-TEMP = "Y" OR "y"
+           GO TO A000-START
+        END-IF.
+        DISPLAY "Thanks For Using This Utility".
+        DISPLAY "Help Poor Students In India!".
+   
+        COPY MISERR02 IN LIBRYMIS.
+        STOP RUN.
+                    
