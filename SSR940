@@ -1,0 +1,1580 @@
+000010******************************************************************
+000020
+000030*   (C) COPYRIGHT FINANCIAL NETWORK SERVICES PTY LTD. 1982       *
+000040*       ALL RIGHTS RESERVED. NO PART OF THIS PROGRAM MAY         *
+000050*       BE PHOTOCOPIED, REPRODUCED, TRANSLATED TO ANOTHER        *
+000060*       PROGRAM LANGUAGE OR USED IN ANY WAY WITHOUT THE          *
+000070*       PRIOR WRITTEN CONSENT OF FINANCIAL NETWORK SERVICES      *
+000080*       OR THE AUTHORISED SELLING AGENT.                         *
+000090*----------------------------------------------------------------*
+000100*             FINANCIAL NETWORK SERVICES PTY LTD.                *
+000110*               70 ROSEHILL ST., REDFERN, 2016                   *
+000120*                   SYDNEY, AUSTRALIA.                           *
+000130*                     TEL. 318-1088                              *
+000140******************************************************************
+000150******************************************************************
+000160***                                                            ***
+000170***  SYSTEM:-  VOSTRO TRANSACTIONS EXTRACT                     ***
+000180***                                                            ***
+000190***  PROGRAM:- SSR940
+000200
+000210***  MODULE :- FOREX
+000220***                                                            ***
+000230***  PURPOSE:- TO GENERATE EXTRACT FOR                         ***
+000240***            FOR ALL TRANSACTIONS ON NOSTRO ACCOUNTS         ***
+000250***                                                            ***
+000260***                                                            ***
+000270******************************************************************
+000280*                                                                *
+000290*                    PROGRAM HISTORY                             *
+000300*                    ---------------                             *
+000310*    PROGRAMMERS INITIALS TOGETHER WITH THE "SPR" NUMBER MUST BE *
+000320*    REFLECTED IN COLUMNS 73-80 OF EVERY LINE/S CHANGED OR ADDED.*
+000330*                                                                *
+000340* PROGRAMMER   :  DATE     : SPR NO: COMMENTS                    *
+000350******************************************************************
+000360* VAIBHAV JHA  : 5/11/2013 : 73999 : CHANGED AS A NEW REQUIREMET *
+000370*                                    FROM STATE BANK OF INDIA    *
+000380* VAIBHAV JHA  : 27/12/2013: 74423 : CHANGED AS A NEW REQUIREMET *
+000390*                                    FROM STATE BANK OF INDIA    *
+000400* VAIBHAV JHA  : 08/03/2014: 74646 : CHANGES DONE IN FIELD 61    *
+000410*                                    AS A REQUIREMET FROM        *
+000420*                                    STATE BANK OF INDIA         *
+000430* VAIBHAV JHA  : 15/07/2014: 75081 : CHANGES DONE IN FIELD 61    *
+000440*                                    AND CURRENCY ACD to USD AND *
+000450*                                    ACE to EUR                  *
+A75082* AYUSHI NAG   : 16/07/2014: 75082 : INCLUSION OF BLOCKED BGLS   *
+000470*-----------------------------------------------------------------
+A76205* AYUSHI       : 13/07/2015: 76205 : REMOVING HARDCODING OF      *
+A76205*                                    FD-BRANCH - 01111           *
+A76205*-----------------------------------------------------------------
+000510* RUCHA        : 03/08/2023: 23060201 : BGL ACCOUNT WITH NM,CC,CI*
+000520*                                       MB ID CODES ADDED IN     *
+000530*                                       SSR940 REPORT            *
+000540*-----------------------------------------------------------------
+ROHITH* ROHITH    : 16/09/2024 : 24080121 : CODE CHANGES TO ADD        *
+ROHITH* MALAPATI  :                       : TRACABILITY                *
+ROHITH*----------------------------------------------------------------*
+PPPPPP* PAVAN  :  06/11/2025 : 25100075 : TO ADD NARRATION IN 61 TAG   *
+PPPPPP*                                   AFTER NTRF FOR NM ACCOUNTS   *
+PPPPPP*----------------------------------------------------------------*
+ROHITH***************START OF 24080121*********************
+ROHITH$SET TRACE
+ROHITH***************END   OF 24080121*********************
+000640  IDENTIFICATION DIVISION.
+000650  PROGRAM-ID. SSR940.
+000660  ENVIRONMENT DIVISION.
+000670  CONFIGURATION SECTION.
+000680  SOURCE-COMPUTER. VAX.
+000690  OBJECT-COMPUTER. VAX.
+000700  SPECIAL-NAMES.
+000710  CONSOLE IS CONS.
+000720  INPUT-OUTPUT SECTION.
+000730  FILE-CONTROL.
+000740  SELECT PRNTFILE   ASSIGN TO  WA-SSR0940-FILE
+000750  ORGANIZATION IS LINE SEQUENTIAL.
+V75081*******************START OF IR 75081***************
+V75081  SELECT BGL-CURR   ASSIGN TO "$card/CURRCONVERT.card"
+V75081  ORGANIZATION IS LINE SEQUENTIAL.
+V75081*******************END OF IR 75081*****************
+A75082*******************START OF IR 75082***************
+A75082  SELECT BLKBGL ASSIGN TO "$card/SSRBGLBLOCK.card"
+A75082  ORGANIZATION IS LINE SEQUENTIAL.
+A75082*******************END OF IR 75082*****************
+000840******************START OF IR 23060201*************
+PPPPPP******************START OF IR 25100075************
+AS5082* SELECT SSRBGL ASSIGN TO "$card/SSR940_ACC.card"
+AD5082* ORGANIZATION IS LINE SEQUENTIAL
+A7F205* ACCESS MODE IS SEQUENTIAL
+A76G05* FILE STATUS IS WA-SSR940-STATUS.
+PPPPPP******************END OF IR 25100075***************
+A750H2*******************END OF IR 23060201**************
+
+A76205****************START OF IR 76205********************
+A76205  SELECT FDBRANCH ASSIGN TO "FDBRANCH"
+A76205  ORGANIZATION IS LINE SEQUENTIAL
+A76205  ACCESS MODE IS SEQUENTIAL
+A76205  FILE STATUS IS WA-FDBRCH-STATUS.
+A76205****************END OF IR 76205**********************
+000990  DATA DIVISION.
+001000  FILE SECTION.
+001010  FD PRNTFILE.
+001020  01 FINAL-REC                          PIC X(176).
+	
+V75081*********************START OF IR 75081******************
+V75081  FD BGL-CURR.
+V75081  01 BGL-CURR-RECORD.
+V75081     03 FD-BGL-NO                       PIC X(16).
+V75081     03 FILLER                          PIC X(01).
+V75081     03 FD-FROM-CURR                    PIC X(03).
+V75081     03 FILLER                          PIC X(01).
+V75081     03 FD-TO-CURR                      PIC X(03).
+V75081*********************END OF IR 75081********************
+
+A75082*********************START OF IR 75082******************
+A75082  FD BLKBGL.
+A75082     01 BLKBGL-CARD.
+A75082        03 FD-BGL                          PIC X(16).
+A75082        03 FILLER                          PIC X(01).
+A75082        03 FD-CURRENCY                     PIC X(03).
+A75082*********************END OF IR 75082********************
+
+AQ5082*********************START OF IR 23060201******************
+PPPPPP********************START OF IR 25100075******************
+A7W082* FD SSRBGL.
+A75E82*    01 SSR940-ACC-CARD.
+A750R2*       03 FD-BGL-ACCT                     PIC X(16).
+PPPPPP********************END OF IR 25100075*********************
+A750U2*********************END OF IR 23060201********************
+
+001300*********************START OF IR 76205******************
+001310  FD FDBRANCH.
+001320     01 FD-BRANCH                          PIC X(05).
+001330*********************END OF IR 76205********************
+
+001350  WORKING-STORAGE SECTION.
+ROHITH***************START OF 24080121*********************
+ROHITH      COPY TRENMAST IN LIBRYMIS.
+ROHITH***************END   OF 24080121*********************
+001390  01 WORK-AREA.
+001400     03 WA-PARM.
+001410        05 PARM-DATA.
+001420           07 FILLER                    PIC X(12).
+001430           07 PARAM-SOC                 PIC 9(03).
+001440           07  FILLER                   PIC X(01).
+001450           07  PARAM-LANGUAGE           PIC 9.
+001460           07  FILLER                   PIC X(01).
+001470           07  PARAM-BRANCH-CODE        PIC 9(16).
+001480           07  FILLER                   PIC X(01).
+001490           07  PARAM-CARD-DATE          PIC 9(08).
+
+001510      EXEC SQL BEGIN DECLARE SECTION END-EXEC.
+001520  
+001530  01 WS-ACT-NO                            PIC X(16).
+001540  01 WS-ACT-NO-CHK-DGT                    PIC X(17).
+001550  01 WS-FD-CODE                           PIC X(05).
+001560  01 WS-CURR                              PIC X(03).
+001570  01 WA-DATE                              PIC 9(09) BINARY.
+001580  01 DEAL-DT                              PIC X(09).
+001590************START OF IR 74423 ***************************
+001600*  01 WA-FIRST-TIME                        PIC X.
+001610************END OF IR 74423 ***************************
+001620  01 WA-SR-NO                             PIC X(09).
+001630  01 WA-DEAL-DATE                         PIC X(08).
+001640  01 WA-BRANCH                            PIC X(05).
+001650  01 WA-BR-REF                            PIC X(16).
+001660  01 WA-JRNL                              PIC 9(09).
+001670************START OF IR 74646 ***************************
+001680  01 WA-VAL-DATE                          PIC X(08).
+001690  01 WA-VALUE-DATE REDEFINES WA-VAL-DATE.   
+001700     03 WA-VAL-DD                      PIC 9(2).
+001710     03 WA-VAL-MM                      PIC 9(2).
+001720     03 WA-VAL-CC                      PIC 9(2).
+001730     03 WA-VAL-YY                      PIC 9(2).
+001740************END OF IR 74646 ***************************
+001750  01 WA-AMT1                              PIC S9(14)V999
+001760                                        SIGN TRAILING SEPARATE.
+001770  01 WA-BAL                               PIC S9(14)V999
+001780                                        SIGN TRAILING SEPARATE.
+001790  01 WA-OPEN-BAL                          PIC S9(14)V999
+001800                                        SIGN TRAILING SEPARATE.
+001810  01 WA-OPEN-BAL-TEM                      PIC S9(14)V999
+001820                                        SIGN TRAILING SEPARATE.
+
+001840  01 WA-BIT                               PIC 9.
+001850  01 WA-CORR-REF                          PIC X(16). 
+001860  01 WA-TRAN-CODE                         PIC 9(05).
+001870  01 WG-NARR                              PIC X(30).
+001880  01 WA-TRAN-NO                           PIC X(09).
+001890  01 WA-BIC-CODE                          PIC X(12).
+001900  01 SQ-GLDM-KEY                          PIC X(19).
+PPPPPP******************START OF IR 25100075********************
+PPPPPP  01 WA-NARR-REF                          PIC X(16).
+PPPPPP*******************END OF IR 25100075*********************
+001940      EXEC SQL END DECLARE SECTION END-EXEC.
+001950      EXEC SQL INCLUDE SQLCA END-EXEC.
+001960  
+001970 01 WS-GLDM-KEY.
+001980    03 WS-INST-NO                 PIC X(3).
+001990    03 WA-GLDM-ACT-NO             PIC X(16).
+
+002010 01 WS-BGL-BALANCE                PIC S9(17)V9(3).
+002020************START OF IR 74423 ***************************
+002030*  01 WA-REC0                              PIC X(56).
+V75081************START OF IR 75081 ***************************
+002050*  01 WA-REC0                              PIC X(49).
+V75081************END OF IR 75081 ***************************
+002070************END OF IR 74423 ***************************
+V75081************START OF IR 75081 ***************************
+002090  01 WA-REC0                              PIC X(55).
+V75081************END OF IR 75081 ***************************
+002110  01 WA-REC1                              PIC X(13).
+002120  01 WA-REC2                              PIC X(21).
+002130  01 WA-REC3                              PIC X(16).
+002140  01 WA-REC4.
+002150     03 WA-R4                             PIC X(15).
+002160     03 WA-OPENING-BAL04                  PIC X(18).
+002170************START OF IR 74423 ***************************
+002180* 01 WA-REC5                               PIC X(78).
+002190 01 WA-REC5                               PIC X(71).
+002200************END OF IR 74423 ***************************
+002210 01 WA-R5                                 PIC X(15).
+002220 01 WA-TRAN-AMT.
+002230      03 WA-AMT-PART1                   PIC 9(14) VALUE ZEROS.
+002240      03 WA-AMT-PART1-RE REDEFINES WA-AMT-PART1.
+002250           05 WA-NO OCCURS 14 TIMES PIC 9.
+002260      03 WA-AMT-PART2                   PIC X VALUE ",".
+002270      03 WA-AMT-PART3                   PIC 9(03) VALUE ZEROS.
+002280      03 WA-AMT-PART3-RE REDEFINES WA-AMT-PART3.
+002290           05 WB-NO OCCURS 3 TIMES PIC 9.
+002300 01 WA-NTRF                              PIC X(04)
+002310                                      VALUE 'NTRF'.
+002320 01 WA-PART-BR-REF                       PIC X(16).
+002330 01 WA-PART-CORR-REF                     PIC X(16).
+002340 01 WA-MFX-SR-NO                         PIC X(09).
+002350  01 WA-REC6.
+002360     03 WA-R6                            PIC X(15).
+002370     03 WA-CLOS-AMNT6                    PIC X(18).
+
+002390 01 FLAG-62                              PIC 9.
+
+002410  01 WA-CLOS-AMNT                        PIC S9(14)V999.
+002420  01 WA-CLOS-AMNT1                       PIC X(17).
+002430  01 WA-CLOS-AMNT2.
+002440     03 WC-PART1                         PIC Z(13)9.
+002450     03 WC-PART2                         PIC X VALUE ','.
+002460     03 WC-PART3.
+002470        05 WC-PART3A                     PIC X(02).
+002480        05 WC-PART3B                     PIC X.
+
+002500 01  WA-INDEX                            PIC 9(02) VALUE ZEROS.
+002510 01  FLAG1                               PIC 9.
+
+002530*****************START OF IR 74423  ***************************
+002540* 01 WA-MESSAGE-END                       PIC X(04) VALUE
+002550*                                         "-}".
+002560 01 WA-MESSAGE-END                       PIC X(03) VALUE
+002570                                         "-}$".
+002580*****************END OF IR 74423  ***************************
+
+002600 01 WC-SIGN                             PIC X.
+002610 01 WC-IND                              PIC X(01).
+002620 01 WE-C                                PIC 9(04).
+002630 01 WE-D                                PIC 9(04).
+002640 01 WE-A                                PIC 9(04).
+002650 01 WE-B                                PIC 9(04).
+
+TTTTTT 01 WA-REC8.
+TTTTTT    03 WA-R8-86                         PIC X(4) VALUE ":86:".
+TTTTTT    03 WA-R8-TRAN-CODE                  PIC X(6).
+TTTTTT    03 WA-FILL1                         PIC X(1) VALUE ":".
+TTTTTT    03 WA-R8-DESC-TEMP                  PIC X(15).
+TTTTTT 01 WS-TALLY                            PIC 9(2) VALUE ZERO.
+TTTTTT 01 WS-DESC-LENGTH                      PIC 9(2) VALUE ZERO.
+TTTTTT 01 EXIT-TRAN                           PIC 9.
+002750  01 WA-CO                              PIC 9(02).
+002760  01 WB-CO                              PIC 9(02).
+002770  01 P-IND                              PIC X(01).
+002780  01 WA-I                               PIC 9(04).
+
+002800  01 WA-IND                             PIC X(01).
+002810  01 WA-SIGN                            PIC X(01).
+002820  01 WA-FLAG                            PIC X(01).
+002830  01 WS-TEMP-BALANCE.
+002840     03 WS-T1                           PIC Z(14).
+002850     03 WS-T2                           PIC X VALUE ",".
+002860     03 WS-T3.
+002870        05 WS-T3-A                      PIC X(02).
+002880        05 WS-T3-B                      PIC X.
+002890  01 WA-S                               PIC 9(04).
+002900  01 WA-W                               PIC 9(04).
+002910  01 WW-B                               PIC 9(04).
+002920  01 WA-PREV-ACT-NO                     PIC X(16).
+
+002940  01 WA-SSR0940-FILE.
+002950     02 WS-DIR-PATH                     PIC X(34).
+002960     02 WS-FILE-NAME                    PIC X(42).
+
+002980  01 WA-TRAN-DATE1.
+002990     03 WA-TRAN-DD                      PIC 9(2).
+003000     03 WA-TRAN-MM                      PIC 9(2).
+003010     03 WA-TRAN-CC                      PIC 9(2).
+003020     03 WA-TRAN-YY                      PIC 9(2).
+
+003040  01 WA-TEMP-BAL-Z                      PIC Z(18).                        
+003050  01 WA-TEMP-BAL REDEFINES WA-TEMP-BAL-Z.
+003060     03 WA-TEMP-BAL-X                   PIC X(18).                        
+003070  01 WA-TEMP-AMNT                       PIC S9(14)V999.
+003080  01 WA-TRAN-AMOUNT                     PIC 9(14)V999.
+
+003100  01 WB-SIGN                            PIC X(01).
+003110  01 WB-IND                             PIC X(01).
+003120  01 WA-STMNT-NO                        PIC 9(05).
+003130  01 WA-WORKING-DATE.
+003140     03 WA-WORKING-CC                   PIC 99.
+003150     03 WA-WORKING-YY                   PIC 99.
+003160     03 WA-WORKING-MM                   PIC 99.
+003170     03 WA-WORKING-DD                   PIC 99.
+003180  
+003190  01 WA-TODAY-BINARY-DATE               PIC 9(09) BINARY.
+003200  01 WA-CARD-DT-BINARY                  PIC 9(09) BINARY.
+003210  01 WA-EOF                             PIC X.
+003220  01 WS-EOF                             PIC X.
+003230  01 WA-TEMP-DATE.
+003240     03 WA-TEMP-DD                      PIC 99.
+003250     03 WA-TEMP-MM                      PIC 99.
+003260     03 WA-TEMP-CCYY                    PIC 9999.
+
+
+003290  01 WA-TEMP1-DATE.
+003300     03 WA-TEMP1-DD                      PIC 99.
+003310     03 WA-TEMP1-MM                      PIC 99.
+003320     03 WA-TEMP1-CCYY                    PIC 9999.
+003330
+003340  01 WA-TEMP1-BIN-DATE                   PIC 9(09) BINARY.
+
+V75081************************START OF IR 75081******************
+V75081  01 WA-ACCT-FOUND                       PIC X(1) VALUE "N".
+V75081************************END OF IR 75081*********************
+
+A75082************************START OF IR 75082*******************
+A75082  01 WA-Y                                PIC 9(02) VALUE 01.
+A75082  01 WS-EOR                              PIC X(1) VALUE "N".
+A75082  01 WA-COUNT                            PIC 9(02).
+A75082  01 WA-FXAT-END                         PIC X(1) VALUE "N".
+A75082  01 WA-BGLBLK.
+A75082     03 WA-BGLBLK-ARR     OCCURS 99 TIMES.
+A75082        05 WA-BGL                        PIC X(16).
+A75082        05 WA-CURRENCY                   PIC X(03).
+A75082************************END OF IR 75082*********************
+
+AA5082************************START OF IR 23060201*******************
+PPPPPP**********************START OF IR 25100075*******************
+003530* 01 WA-X                              PIC 9(02) VALUE 01.
+A75S82* 01 WA-EOR                            PIC X(1) VALUE "N".
+A750F2* 01 WS-COUNT                          PIC 9(02).
+AG5082* 01 WA-SSRBGL.
+A7T082*    03 WA-SSRBGL-ARR OCCURS 99 TIMES.
+A75Y82*       05 WA-BGL-ACCT                 PIC X(16).
+JKJDFK* 01 WA-SSR940-STATUS                  PIC X(02) VALUE SPACES.
+SUMITS* 01 WS-UTSMART-RECORD.
+BHAGYA*         COPY UTSMARTCPBK IN LIBRYMIS
+BHAGYA*          REPLACING ==(TEMP)== BY ==WS==.
+003630*    COPY UT8500CA IN LIBRYMIS.
+AN0876*    COPY UT8500FU IN LIBRYMIS.
+PPPPPP  01 WA-NM-FLG                     PIC X(01)  VALUE "Y".
+PPPPPP**************************END OF IR 25100075*****************
+A7508Q************************END OF IR 23060201*********************
+
+A76205************************START OF IR 76205*******************
+A76205  01 WA-FDBRCH                           PIC X(05) VALUE SPACES.
+A76205  01 WA-FDBRCH-STATUS                    PIC X(02) VALUE SPACES.
+A76205  01 WA-FILE-ERROR                       PIC X(01) VALUE 'N'.
+A76205************************END OF IR 76205*********************
+003740  
+003750  01 UT0220-PARAM-AREA.
+003760     COPY INSPARM     IN LIBRYMIS.
+003770     COPY UT1999CA    IN LIBRYMIS.
+003780     COPY UT0030CA    IN LIBRYMIS.
+003790     COPY UT0020CA    IN LIBRYMIS.
+003800     COPY DBIOCALL    IN LIBRYMIS.
+003810     COPY DBIOMODNAME IN LIBRYMIS.
+003820     COPY DBIOMODCA   IN LIBRYMIS.
+003830     COPY STRTAREA    IN LIBRYMIS.
+003840     COPY UT0151CA    IN LIBRYMIS.
+
+
+003870 01  UT0250CA-CALL-AREA.
+003880     COPY SYSPCALL IN LIBRYMIS.
+003890 
+003900 01  PUAREA.
+003910     03 WA-INPUT-PARAM-TABLE OCCURS 32 TIMES
+003920                                         PIC X.
+003930     03  FIELD-B                         PIC X(4).
+
+
+003960  PROCEDURE DIVISION.
+ROHITH***************START OF 24080121*********************
+ROHITH      COPY TRENMIST IN LIBRYMIS.
+ROHITH IF WA-TRACE-GET-FLAG = 'Y'
+ROHITH    DISPLAY 'START OF SSR940'
+ROHITH    READY TRACE
+ROHITH END-IF.
+ROHITH***************END   OF 24080121*********************
+
+
+004060	A000-MAIN-PARA.
+
+004080  INITIALIZE WA-CO WB-CO P-IND WA-I WA-IND WA-SIGN
+004090             WA-S WA-W WW-B WA-FLAG      
+004100             WA-PREV-ACT-NO     
+004110             WA-SSR0940-FILE WA-TRAN-DATE1
+004120             WA-TEMP-BAL-Z WA-TEMP-BAL WA-TRAN-AMOUNT WB-SIGN        
+004130             WB-IND WA-STMNT-NO    
+004140             WA-WORKING-DATE WA-TODAY-BINARY-DATE
+004150             WA-CARD-DT-BINARY WA-EOF WS-EOF
+004160             WA-TEMP-DATE WA-TEMP1-DATE
+A75082*************START OF IR 75082****************************
+A75082             WA-COUNT WA-BGLBLK
+A75082*************END OF IR 75082******************************
+AW5082*************START OF IR 23060201****************************
+PPPPPP*******************START OF IR 25100075******************
+A7X082*            WS-COUNT WA-SSRBGL WS-UTSMART-RECORD
+PPPPPP*********************END OF IR 25100075*******************
+A75Y82*************END OF IR 23060201******************************
+004250************START OF IR 74646 ***************************
+004260             WA-VAL-DATE
+004270************START OF IR 74646 ***************************
+004280             WA-TEMP1-BIN-DATE.
+TTTTTT  MOVE ZEROS     TO WS-TALLY
+TTTTTT                    WA-TRAN-CODE
+004310                    EXIT-TRAN
+004320                    WA-DATE WA-BIT WA-JRNL
+004330                    WA-OPEN-BAL WS-BGL-BALANCE
+004340                    FLAG-62 WE-C WE-D WE-A WE-B
+004350                    WA-AMT1
+004360                    WA-BAL FLAG1 WA-OPEN-BAL-TEM
+004370                    WA-TEMP-AMNT WA-CLOS-AMNT1 WA-CLOS-AMNT.
+004380************START OF IR 74423 ***************************
+004390*  MOVE SPACES    TO DEAL-DT WA-FIRST-TIME WG-NARR
+004400  MOVE SPACES    TO DEAL-DT WG-NARR
+004410************END OF IR 74423 ***************************
+004420                    SQ-GLDM-KEY WS-GLDM-KEY
+004430                    WA-TRAN-NO WA-BIC-CODE WA-CORR-REF
+004440                    WA-REC0 WA-REC1 WA-REC2 WA-REC3
+004450                    WA-PART-BR-REF WA-PART-CORR-REF
+004460                    WA-MFX-SR-NO
+004470                    WC-SIGN WC-IND
+004480                    WA-DEAL-DATE
+004490                    WS-ACT-NO WA-SR-NO WA-BRANCH WA-BR-REF
+004500                    WS-CURR.
+004510************START OF IR 74423 ***************************
+004520*  MOVE 'Y'       TO WA-FIRST-TIME.                 
+004530************END OF IR 74423 ***************************
+004540                 
+004550  PERFORM A050-OPEN-DB          THRU A050-EXIT.
+004560  PERFORM A150-GET-TODAY-DATE   THRU A150-EXIT.
+004570  MOVE "$spool/Interfaces/SR0940/EXTRACTS/"
+004580                          TO WS-DIR-PATH
+004590  MOVE SPACES             TO WS-FILE-NAME
+004600
+004610  STRING "SSR940"          DELIMITED BY SIZE
+004620         "_"               DELIMITED BY SIZE
+004630          WA-WORKING-DD    DELIMITED BY SIZE
+004640          WA-WORKING-MM    DELIMITED BY SIZE
+004650          WA-WORKING-CC    DELIMITED BY SIZE
+004660          WA-WORKING-YY    DELIMITED BY SIZE
+004670  INTO  WS-FILE-NAME
+004680  PERFORM A100-OPEN-FILE        THRU A100-EXIT
+A76205************************START OF IR 76205***********
+A76205  IF WA-FILE-ERROR = "Y"
+ROHITH***************START OF 24080121*********************
+ROHITH IF WA-TRACE-GET-FLAG = 'Y'
+ROHTIH    DISPLAY 'END OF SSR940'
+ROHITH    RESET TRACE
+ROHITH END-IF
+ROHITH***************END   OF 24080121*********************
+A76205    STOP RUN
+A76205  END-IF.
+A76205************************END OF IR 76205*************
+004800  PERFORM A170-READ-CARD        THRU A170-EXIT.
+
+004820  IF WA-CARD-DT-BINARY = ZEROS
+004830     MOVE WA-TODAY-BINARY-DATE TO WA-DATE
+004840   ELSE
+004850     MOVE WA-CARD-DT-BINARY TO WA-DATE
+004860  END-IF.
+
+004880   PERFORM A250-JULIAN THRU   A250-EXIT.
+004890   PERFORM A503-DROP-SEQUENCE THRU A503-EXIT
+004900   PERFORM A500-CREATE-SEQUENCE THRU A500-EXIT
+004910   PERFORM A200-READ-FXAT       THRU A200-EXIT.
+004920   PERFORM A600-CLOSE           THRU A600-EXIT.
+004930   PERFORM A800-STOP            THRU A800-EXIT.
+ROHITH***************START OF 24080121*********************
+ROHITH IF WA-TRACE-GET-FLAG = 'Y'
+ROHTIH    DISPLAY 'END OF SSR940'
+ROHITH    RESET TRACE
+ROHITH END-IF.
+ROHITH***************END   OF 24080121*********************
+005000   STOP RUN.
+
+005020  A050-OPEN-DB.
+005030       CALL "DBIO".
+005040       MOVE 95 TO DBIO-CALL-FUNC.
+005050       CALL "DBIO" USING DBIO-CALL-PARAM
+005060                         DBIO-CALL-SYS-AREA
+005070                         DBIO-CALL-KEY-AREA
+005080                         DBIO-CALL-STATUS.
+005090      IF DBIO-CALL-STATUS = "****"
+005100         DISPLAY "SSR940: GOOD DB SIGNON"
+005110      ELSE
+005120         DISPLAY "SSR940: OPEN ERROR - "
+005130      END-IF.
+005140  
+005150  A050-EXIT.
+005160      EXIT.
+005170  
+005180  A100-OPEN-FILE.
+005190       OPEN OUTPUT PRNTFILE.
+A76205************************START OF IR 76205***********
+A76205       OPEN INPUT FDBRANCH.
+A76205       IF WA-FDBRCH-STATUS NOT = "00"
+A76205         DISPLAY "SSR940 (A100): ERROR OPENING FDBRCH"
+A76205         ", FILE STATUS " WA-FDBRCH-STATUS
+A76205         MOVE "Y" TO WA-FILE-ERROR
+A76205         GO       TO A100-EXIT
+A76205       END-IF.
+A76205************************END OF IR 76205*************
+005290  A100-EXIT.
+005300      EXIT.
+
+005320  A250-JULIAN.
+005330       PERFORM A260-GET-DATE THRU A260-EXIT.
+005340       MOVE '01'           TO WA-TEMP1-DD.
+005350       MOVE '01'           TO WA-TEMP1-MM.
+005360       MOVE WA-TEMP-CCYY   TO WA-TEMP1-CCYY
+005370       MOVE WA-TEMP1-DATE  TO UT0030-DATE-DDMMCCYY.
+005380       MOVE 1              TO UT0030-FUNCTION.
+005390
+005400       CALL "UT0030"      USING UT0030-FUNCTION
+005410                                UT0030-DATE-AREA
+005420                                UT0030-BINARY-DATE.
+005430       MOVE UT0030-BINARY-DATE TO WA-TEMP1-BIN-DATE.
+005440           COMPUTE WA-STMNT-NO  =
+005450                 WA-DATE - WA-TEMP1-BIN-DATE.
+005460  A250-EXIT.
+005470      EXIT.
+
+005490  A260-GET-DATE.
+005500     MOVE WA-DATE TO UT0020-BINARY-DATE.
+005510     MOVE 1 TO UT0020-FUNCTION.
+005520     CALL "UT0020" USING  UT0020-FUNCTION
+005530                          UT0020-DATE-AREA
+005540                          UT0020-BINARY-DATE.
+005550
+005560     MOVE UT0020-DATE-DD     TO WA-TEMP-DD.
+005570     MOVE UT0020-DATE-MM     TO WA-TEMP-MM.
+005580     MOVE UT0020-DATE-CCYY   TO WA-TEMP-CCYY.
+005590
+005600  A260-EXIT.
+005610     EXIT.
+
+005630  A200-READ-FXAT.
+A75082****************START OF IR 75082********************
+A75082       MOVE 1 TO WA-COUNT.
+A75082****************END OF IR 75082**********************
+AO5082****************START OF IR 23060201********************
+PPPPPP*****************START OF IR 25100075******************
+A7P082*      MOVE 1 TO WS-COUNT.
+PPPPPP******************END OF IR 25100075******************
+A75I82****************END OF IR 23060201**********************
+005720       PERFORM A210-DEC-CUR THRU A210-EXIT.
+005730       PERFORM A220-FETCH-CUR THRU A220-EXIT
+005740       UNTIL WA-EOF  = "Y".
+005750************START OF IR 74423 ***************************
+005760*       IF WA-FIRST-TIME = 'Y'
+005770*          MOVE "  NIL REPORT " TO FINAL-REC
+005780*          WRITE FINAL-REC AFTER 1
+005790*          MOVE 'Y' TO WS-EOF
+005800*       END-IF.   
+005810************END OF IR 74423 ***************************
+005820  A200-EXIT.
+005830      EXIT. 
+
+
+A76205****************START OF IR 76205********************
+A76205  R100-READ-FDCARD.
+A76205       READ FDBRANCH.
+A76205       MOVE FD-BRANCH TO WA-FDBRCH
+A76205       CLOSE FDBRANCH.
+A76205  R109-EXIT.
+A76205       EXIT.
+A76205****************END OF IR 76205**********************
+005940       
+005950  A210-DEC-CUR.
+005960       EXEC SQL DECLARE CUR1 CURSOR FOR 
+005970       SELECT 
+005980             ACCT_NO,
+005990             CURRENCY,
+006000             FD_CODE,
+006010             BIC_CODE
+006020       FROM
+006030             FXAT
+006040       WHERE INST_NO = '003' AND
+A76205****************START OF IR 76205*****************
+006060*             BRANCH  = '01111' AND
+A76205             BRANCH = :WA-FDBRCH AND
+A76205****************END OF IR 76205*****************
+
+006100***************START OF IR 23060201***************
+PPPPPP*****************START OF IR 25100075***************
+006120             ID_CODE = 'NM'
+006130*            ID_CODE IN ('NM','CC','CI','MB')
+PPPPPP*******************END OF IR 25100075****************
+006150****************END OF IR 23060201****************
+006160       ORDER BY ACCT_NO
+006170       END-EXEC.
+006180          EXEC SQL OPEN CUR1 END-EXEC.
+
+006200  A210-EXIT.
+006210      EXIT.
+
+006230  A220-FETCH-CUR.
+006240       MOVE SPACES TO WA-BIC-CODE WS-FD-CODE WS-CURR WS-ACT-NO.
+006250       EXEC SQL FETCH CUR1 
+006260            INTO  :WS-ACT-NO,
+006270                  :WS-CURR,
+006280                  :WS-FD-CODE,
+006290                  :WA-BIC-CODE
+006300       END-EXEC.
+006310       IF SQLCODE IN SQLCA = 1403 OR LESS THAN ZEROS
+PPPPPP********************START OF IR 25100075******************
+PPPPPP          MOVE "N" TO WA-NM-FLG
+PPPPPP*********************END OF IR 25100075*******************
+006350          MOVE "Y" TO WA-EOF
+A75082******************START OF IR 75082**********************
+A75082           MOVE "Y" TO WA-FXAT-END
+A75082           PERFORM B100-READ-BLOCK-BGLS  THRU B100-EXIT
+A75082******************END OF IR 75082************************
+AF5082******************START OF IR 23060201 **********************
+PPPPPP********************START OF IR 25100075********************
+A75H82*          PERFORM S100-READ-SSR-BGLS  THRU S109-EXIT
+PPPPPP*********************END OF IR 25100075*********************
+A750J2******************END OF IR 23060201***********************
+006450          GO TO A220-EXIT
+006460       END-IF.
+
+006480          MOVE ZEROS TO EXIT-TRAN
+006490          MOVE ZEROS TO WA-TEMP-AMNT
+006500       IF SQLCODE = ZEROS
+A75082******************START OF IR 75082************************
+006520*          PERFORM D400-FORMAT-SWIFT THRU D400-EXIT
+006530*          MOVE WS-ACT-NO TO WA-PREV-ACT-NO
+006540*          MOVE WA-DATE TO UT0020-BINARY-DATE
+006550*          PERFORM Y010-UT0020-PARA  THRU  Y010-EXIT
+006560*          MOVE UT0020-DATE-DDMMCCYY
+006570*                               TO WA-TRAN-DATE1
+006580*          MOVE "N" TO WS-EOF
+006590*          DISPLAY "ACC-NO:" WS-ACT-NO  
+006600*          PERFORM T200-GET-GECT-AMT THRU T200-EXIT
+006610*          PERFORM T300-FETCH-GECT-AMT THRU T300-EXIT
+006620*          UNTIL WS-EOF = 'Y'
+A75082           PERFORM G100-GECT-DETAILS THRU G100-EXIT
+A75082******************END OF IR 75082**************************
+006650       END-IF.   
+
+006670  A220-EXIT.
+006680      EXIT.
+
+A75082******************START OF IR 75082***************************
+A75082  G100-GECT-DETAILS.
+A75082          PERFORM D400-FORMAT-SWIFT THRU D400-EXIT
+A75082          IF WA-FXAT-END = 'Y' AND WA-COUNT < WA-Y
+A75082             MOVE WA-BGL(WA-COUNT) TO WS-ACT-NO
+A75082             MOVE WA-CURRENCY(WA-COUNT) TO WS-CURR
+A75082             ADD 1 TO WA-COUNT
+A75082             MOVE ZEROS TO EXIT-TRAN
+A75082             MOVE ZEROS TO WA-TEMP-AMNT
+A75082          END-IF
+AN0808*****************START OF IR 23060201**************************
+PPPPPP********************START OF IR 25100075***********************
+AE0203*         IF WA-FXAT-END = 'Y' AND WS-COUNT < WA-X
+CD0909*            MOVE WA-BGL-ACCT(WS-COUNT) TO WS-ACT-NO
+AS9999*            MOVE SPACES TO WS-CURR
+006850*            EXEC SQL
+006860*                SELECT /*+ INDEX (GLDM GLDMPK)*/  CURRENCY
+006870*                INTO :WS-CURR
+006880*                FROM GLDM WHERE
+006890*                KEY_1 = '003' || :WS-ACT-NO
+006900*            END-EXEC
+RN3434*            ADD 1 TO WS-COUNT
+RM7878*            MOVE ZEROS TO EXIT-TRAN
+RAMA09*            MOVE ZEROS TO WA-TEMP-AMNT
+MARA80*         END-IF
+PPPPPP**********************END OF IR 25100075***********************
+KT0001******************END OF IR 23060201***************************
+A75082          MOVE WS-ACT-NO TO WA-PREV-ACT-NO
+A75082          MOVE WA-DATE TO UT0020-BINARY-DATE
+A75082          PERFORM Y010-UT0020-PARA  THRU  Y010-EXIT
+A75082          MOVE UT0020-DATE-DDMMCCYY
+A75082                               TO WA-TRAN-DATE1
+A75082          MOVE "N" TO WS-EOF
+A75082          DISPLAY "ACC-NO:" WS-ACT-NO
+A75082          PERFORM T200-GET-GECT-AMT THRU T200-EXIT
+A75082          PERFORM T300-FETCH-GECT-AMT THRU T300-EXIT
+A75082          UNTIL WS-EOF = 'Y'.
+
+A75082  G100-EXIT.
+A75082      EXIT.
+
+A75082  B200-READ-BLK-BGL-CARD.
+A75082        READ BLKBGL AT END MOVE "Y" TO WS-EOR.
+A75082        IF WS-EOR NOT = 'Y'
+A75082                MOVE FD-BGL TO WA-BGL (WA-Y)
+A75082                MOVE FD-CURRENCY TO WA-CURRENCY (WA-Y)
+A75082                ADD 1 TO WA-Y
+A75082        ELSE
+A75082                CLOSE BLKBGL
+A75082        END-IF.
+A75082  B200-EXIT.
+A75082      EXIT.
+
+A75082  B100-READ-BLOCK-BGLS.
+A75082           OPEN INPUT BLKBGL.
+A75082           PERFORM B200-READ-BLK-BGL-CARD THRU B200-EXIT
+A75082                                     UNTIL WS-EOR = "Y".
+A75082           PERFORM G100-GECT-DETAILS THRU G100-EXIT
+A75082                                     UNTIL WA-COUNT = WA-Y.
+
+A75082  B100-EXIT.
+A75082      EXIT.
+
+A75082******************END OF IR 75082********************************
+
+
+007360  
+007370 D400-FORMAT-SWIFT.
+007380     MOVE  1 TO WA-INDEX.
+007390 LOOP-1.
+007400     IF WA-INDEX < 13
+007410        IF WA-BIC-CODE(WA-INDEX:1) = SPACES
+007420           MOVE "X" TO WA-BIC-CODE(WA-INDEX:1)
+007430           ADD 1 TO WA-INDEX
+007440           GO TO LOOP-1
+007450        ELSE
+007460           ADD 1 TO WA-INDEX
+007470           GO TO LOOP-1
+007480        END-IF
+007490     END-IF.
+007500
+007510 D400-EXIT.
+007520     EXIT.
+
+007540  A150-GET-TODAY-DATE.
+007550       CALL "UT1999" USING
+007560                              UT1999CA-CALL-AREA
+007570       MOVE UT1999CA-DD    TO UT0030-DATE-DD
+007580                              WA-WORKING-DD.
+007590       MOVE UT1999CA-MM    TO UT0030-DATE-MM
+007600                              WA-WORKING-MM.
+007610       MOVE UT1999CA-CC    TO UT0030-DATE-CC
+007620                              WA-WORKING-CC.
+007630       MOVE UT1999CA-YY    TO UT0030-DATE-YY
+007640                              WA-WORKING-YY.
+007650       MOVE 1              TO UT0030-FUNCTION
+007660       CALL "UT0030" USING
+007670                              UT0030-FUNCTION
+007680                              UT0030-DATE-AREA
+007690                              UT0030-BINARY-DATE
+007700       MOVE UT0030-BINARY-DATE TO WA-TODAY-BINARY-DATE.
+
+007720  A150-EXIT.
+007730      EXIT.
+007740 
+007750  A170-READ-CARD.
+007760   
+007770        CALL "UTCARD" USING WA-PARM.
+007780        IF PARAM-CARD-DATE NOT NUMERIC
+007790           MOVE ZEROES TO PARAM-CARD-DATE
+007800        END-IF.
+    
+A76205****************START OF IR 76205********************
+A76205        PERFORM R100-READ-FDCARD THRU R109-EXIT.
+A76205****************END OF IR 76205**********************
+007850        IF PARAM-CARD-DATE EQUAL ZEROES
+007860           MOVE ZEROES TO WA-CARD-DT-BINARY
+007870           GO TO A170-EXIT
+007880        END-IF.
+007890  
+007900        MOVE PARAM-CARD-DATE TO  UT0030-DATE-DDMMCCYY.
+007910        MOVE 1 TO UT0030-FUNCTION.
+007920        CALL "UT0030" USING UT0030-FUNCTION
+007930                            UT0030-DATE-AREA
+007940                            UT0030-BINARY-DATE.
+007950        MOVE UT0030-BINARY-DATE TO WA-CARD-DT-BINARY.
+007960 
+007970 A170-EXIT.
+007980     EXIT.                                                                                                          
+007990                                                                    
+008000 S200-GET-GECT.
+008010       MOVE "N" TO WA-EOF.
+008020       EXEC SQL DECLARE GETDETL1 CURSOR FOR
+008030       SELECT /*+ INDEX(GECT GECTUK_04) */
+008040              SUBSTR(var_area,13,9) "MFX REF NO", 
+008050              SUBSTR(VAR_AREA,22,8) "DEAL DATE",
+008060              SUBSTR(VAR_AREA,30,5) "BRANCH",
+008070*******************START OF IR 74646******************
+008080*             SUBSTR(var_area,35,16) "BRANCH REFRENCE"
+008090              SUBSTR(var_area,35,16) "BRANCH REFRENCE",
+008100              SUBSTR(var_area,56,8) "VALUE DATE"
+008110*******************END OF IR 74646********************
+008120       FROM
+008130           GECT
+008140       WHERE 
+008150            (INST_NO = '003'      AND
+008160             ACCT_NO = :WS-ACT-NO AND 
+008170             TRAN_TYPE = '85'     AND
+008180             TRAN_DATE = :WA-DATE AND
+008190             JRNL_NO = :WA-JRNL)                   
+008200       
+008210       END-EXEC.
+008220       EXEC SQL OPEN GETDETL1 END-EXEC.
+
+008240       
+008250  S200-EXIT.
+008260      EXIT.
+008270            
+008280  S300-FETCH-GECT.
+008290       MOVE SPACES TO WA-SR-NO
+008300                      WA-DEAL-DATE
+008310                      WA-BRANCH
+008320                      WA-BR-REF
+008330*******************START OF IR 74646******************
+008340                      WA-VAL-DATE
+008350*******************END OF IR 74646********************
+008360       EXEC SQL FETCH GETDETL1
+008370                INTO    :WA-SR-NO,
+008380                        :WA-DEAL-DATE,
+008390                        :WA-BRANCH,
+008400*******************START OF IR 74646******************
+008410*                       :WA-BR-REF
+008420                        :WA-BR-REF,
+008430                        :WA-VAL-DATE
+008440*******************END OF IR 74646********************
+008450       END-EXEC.
+008460       IF SQLCODE = 1403 OR LESS THAN ZEROS 
+008470          GO TO S300-EXIT
+008480       END-IF.                  
+008490   
+008500       IF SQLCODE = ZEROS
+008510          MOVE WA-DATE TO UT0020-BINARY-DATE
+008520          PERFORM Y010-UT0020-PARA  THRU  Y010-EXIT
+008530          MOVE UT0020-DATE-DDMMCCYY
+008540                               TO WA-TRAN-DATE1
+008550          MOVE WA-DEAL-DATE TO UT0030-DATE-DDMMCCYY
+008560          MOVE 1 TO UT0030-FUNCTION
+008570          CALL "UT0030" USING UT0030-FUNCTION
+008580                              UT0030-DATE-AREA
+008590                              UT0030-BINARY-DATE
+008600          MOVE UT0030-BINARY-DATE TO DEAL-DT                    
+008610       END-IF.
+
+008630  S300-EXIT.
+008640      EXIT.
+
+008660  T200-GET-GECT-AMT.
+008670       EXEC SQL DECLARE GETDETL3 CURSOR FOR 
+008680            SELECT /*+ INDEX(GECT GECTUK_04) */ 
+008690                   baseconv.convdata (var_area, 31,8,3) "AMOUNT",
+008700                   baseconv.convdata (var_area, 73,8,3) "BALANCE",
+008710                   substr(var_area,41,1) "CORRELATION BIT",
+008720                   baseconv.convdata (var_area, 19,4) "TRANCODE",
+008730                   JRNL_NO
+008740            FROM GECT
+008750            WHERE (INST_NO = '003'      AND
+008760                   ACCT_NO = :WS-ACT-NO AND
+008770                   TRAN_TYPE = '01'     AND
+008780                   TRAN_DATE = :WA-DATE)
+008790            ORDER BY REC_NO DESC
+008800       END-EXEC.
+008810       EXEC SQL OPEN GETDETL3 END-EXEC.
+008820  
+008830  T200-EXIT.     
+008840      EXIT.
+
+008860  T300-FETCH-GECT-AMT.
+008870   MOVE ZEROS TO WA-OPEN-BAL WA-BAL WA-AMT1 
+008880                 WA-BIT WA-TRAN-CODE.
+008890   MOVE ZEROS TO WA-JRNL.
+008900       EXEC SQL FETCH GETDETL3
+008910            INTO    :WA-AMT1,
+008920                    :WA-BAL,
+008930                    :WA-BIT,
+008940                    :WA-TRAN-CODE,
+008950                    :WA-JRNL
+008960       END-EXEC.
+
+008980   IF ( SQLCODE IN SQLCA = 1403 OR LESS THAN ZEROS )         
+008990      PERFORM A101-GENERATE-TAIL THRU A101-EXIT
+009000      GO TO T300-EXIT
+009010   END-IF.
+009020   IF WA-BIT = 1
+009030      GO TO T300-EXIT
+009040   END-IF. 
+
+009060  MOVE WA-TRAN-CODE TO LINK-IN-TXCODE 
+009070  PERFORM Y200-SET-UP-EDIT-MASK THRU Y200-EXIT
+009080  MOVE LINK-EDIT-TABLE TO STRT-AREA-EDIT-MASK
+009090  MOVE LINK-POSTING-LEVEL TO STRT-AREA-POSTING-LEVEL
+009100  MOVE STRT-AREA-PROCESS-BITS  TO FIELD-B
+009110  CALL "UT0022"   USING PUAREA
+009120
+009130  IF WA-INPUT-PARAM-TABLE(7) = 1
+009140     GO TO T300-EXIT
+009150  END-IF   
+009160
+009170  IF SQLCODE = ZEROS 
+009180     MOVE 'F' TO WA-FLAG
+009190     COMPUTE WA-OPEN-BAL = WA-BAL - WA-AMT1 
+009200     PERFORM S200-GET-GECT THRU S200-EXIT 
+009210     PERFORM DO-PERFORM-TILL THRU DO-PERFORM-EXIT
+009220     MOVE ZEROS TO FINAL-REC
+009230************START OF IR 74423 ***************************
+009240*    MOVE 'N' TO WA-FIRST-TIME
+009250************END OF IR 74423 ***************************
+009260  END-IF.
+
+009280  T300-EXIT.  
+009290      EXIT.
+
+009310 A101-GENERATE-TAIL.
+009320   IF ( WA-PREV-ACT-NO = 0 AND
+009330      FLAG-62 = 1 AND EXIT-TRAN = 0 )
+009340      PERFORM A405-GENERATE-62      THRU A405-EXIT
+009350      MOVE 0   TO  FLAG-62
+009360      MOVE 1   TO  EXIT-TRAN
+009370      MOVE "Y" TO WS-EOF
+009380   ELSE
+009390    IF EXIT-TRAN = 0
+009400       MOVE "Y" TO WS-EOF
+009410       PERFORM A000-PROCESS THRU A000-EXIT
+009420       MOVE 'F' TO WA-FLAG
+009430       MOVE 1   TO FLAG1
+009440       PERFORM DO-PERFORM-FIELDS THRU DO-PERFORM-FIELDS-EXIT
+009450       PERFORM A405-GENERATE-62      THRU A405-EXIT
+009460       MOVE 1   TO  EXIT-TRAN
+009470    END-IF
+009480   END-IF.
+
+009500 A101-EXIT.
+009510  EXIT.
+
+009530  DO-PERFORM-TILL.
+009540    PERFORM S300-FETCH-GECT THRU S300-EXIT
+009550    PERFORM U200-GET-FXTX THRU U200-EXIT
+009560    PERFORM U300-FETCH-FXTX THRU U300-EXIT
+009570    IF WS-ACT-NO = WA-PREV-ACT-NO 
+009580       MOVE  WA-OPEN-BAL TO  WA-OPEN-BAL-TEM
+009590       PERFORM DO-PERFORM-FIELDS THRU DO-PERFORM-FIELDS-EXIT
+009600       MOVE   0          TO WA-PREV-ACT-NO
+009610    END-IF
+009620    IF WA-PREV-ACT-NO = 0
+009630       MOVE  1          TO FLAG-62
+009640      IF WA-AMT1 NOT = ZEROS 
+009650       PERFORM A404-GENERATE-61     THRU A404-EXIT
+009660       PERFORM A406-GENERATE-86     THRU A406-EXIT
+009670      END-IF
+009680    END-IF.
+
+009700  DO-PERFORM-EXIT.
+009710          EXIT.
+
+009730  DO-PERFORM-FIELDS.
+009740   PERFORM A501-DEC-CURSOR       THRU A501-EXIT
+009750   PERFORM A502-FETCH-CURSOR     THRU A502-EXIT
+009760   PERFORM A300-GENERATE-BIC     THRU A300-EXIT
+009770   PERFORM A400-GENERATE-20      THRU A400-EXIT
+009780   PERFORM A401-GENERATE-25      THRU A401-EXIT
+009790   PERFORM A402-GENERATE-28C     THRU A402-EXIT
+009800   PERFORM A403-GENERATE-60      THRU A403-EXIT.
+009810  DO-PERFORM-FIELDS-EXIT.
+009820     EXIT.
+
+009840  U200-GET-FXTX.
+009850       EXEC SQL DECLARE GETDETL4 CURSOR FOR
+009860            SELECT 
+009870                   CORR_REF_NO
+009880            FROM
+009890                   FXTX
+009900            WHERE 
+009910                   ( INST_NO       = '003' AND
+009920                     MFX_DEAL_DATE = :DEAL-DT AND
+009930                     MFX_REF_NO    = :WA-SR-NO )
+009940       END-EXEC.
+009950       EXEC SQL OPEN GETDETL4 END-EXEC.
+009960  
+009970  U200-EXIT.
+009980      EXIT.
+
+010000  U300-FETCH-FXTX.
+010010   MOVE SPACES TO WA-CORR-REF.
+010020       EXEC SQL FETCH GETDETL4
+010030            INTO   
+010040                    :WA-CORR-REF
+010050       END-EXEC.
+010060   IF SQLCODE = 1403 
+010070      MOVE ZEROS  TO WA-CORR-REF
+010080      IF WA-SR-NO(1:2) = 'FD'
+010090         PERFORM U310-GET-GECT THRU U310-EXIT
+010100         PERFORM U320-FETCH-GECT THRU U320-EXIT
+010110         GO TO U300-EXIT
+010120      END-IF   
+010130   END-IF.
+
+010150   IF SQLCODE = ZEROS
+010160     IF WA-CORR-REF = SPACES
+010170        MOVE ZEROS TO WA-CORR-REF
+010180     END-IF
+010190   END-IF.   
+
+010210  U300-EXIT.
+010220      EXIT.
+
+010240  Y010-UT0020-PARA.
+010250       MOVE 1 TO UT0020-FUNCTION.
+010260       CALL "UT0020" USING UT0020-FUNCTION
+010270                           UT0020-DATE-AREA
+010280                           UT0020-BINARY-DATE.
+
+010300  Y010-EXIT.
+010310      EXIT.
+010320  
+010330  A600-CLOSE.
+010340       EXEC SQL CLOSE GETDETL1  END-EXEC.
+010350       EXEC SQL CLOSE GETDETL3  END-EXEC.
+010360       EXEC SQL CLOSE GETDETL4  END-EXEC.
+010370       EXEC SQL CLOSE CUR1      END-EXEC.
+010380       CLOSE PRNTFILE.
+010390  A600-EXIT.
+010400      EXIT.
+
+010420  A800-STOP.
+010430       MOVE 91 TO DBIO-CALL-FUNC.
+010440       CALL "DBIO" USING DBIO-CALL-PARAM
+010450                         DBIO-CALL-SYS-AREA
+010460                         DBIO-CALL-KEY-AREA
+010470                         DBIO-CALL-STATUS.
+010480       IF DBIO-CALL-STATUS = "****"
+010490          DISPLAY "SSR940: GOOD DB SIGNOFF"
+010500       ELSE
+010510          DISPLAY "SSR940: CLOSE ERROR - "
+010520       END-IF.
+010530  
+010540  A800-EXIT.
+010550      EXIT.
+010560  Y200-SET-UP-EDIT-MASK.
+010570     MOVE 02               TO LINK-IN-CALL-CODE.
+010580     MOVE 3                TO LINK-IN-SOC-NO.
+010590     CALL "UT0250" USING
+010600                            UT0250CA-CALL-AREA.
+010610     IF LINK-OUT-STAT NOT = "****"
+010620        DISPLAY "SSR940:(Y200-) OPEN ERROR - "
+010630     END-IF.
+010640  Y200-EXIT.   
+010650     EXIT.
+
+010670  U310-GET-GECT.
+010680       EXEC SQL DECLARE GETDETL7 CURSOR FOR
+010690       SELECT /*+ INDEX(GECT GECTUK_04) */
+010700            substr(var_area,33,30) 
+010710       FROM 
+010720            GECT
+010730       WHERE 
+010740            (INST_NO = '003'      AND
+010750             ACCT_NO = :WS-ACT-NO AND
+010760             TRAN_TYPE = '20'     AND
+010770             TRAN_DATE = :WA-DATE AND
+010780             JRNL_NO = :WA-JRNL)
+
+010800       END-EXEC.
+010810       EXEC SQL OPEN GETDETL7 END-EXEC.
+010820 
+010830  U310-EXIT.
+010840     EXIT.
+
+010860  U320-FETCH-GECT.
+010870       EXEC SQL FETCH GETDETL7
+010880               INTO    :WG-NARR
+010890       END-EXEC.
+010900      IF SQLCODE = 1403 OR LESS THAN ZEROS
+010910         MOVE SPACES TO WG-NARR
+010920      END-IF.
+010930      IF SQLCODE = ZEROS
+010940         MOVE WG-NARR(1:16) TO WA-CORR-REF
+010950      END-IF.
+010960 
+010970  U320-EXIT.
+010980       EXEC SQL CLOSE GETDETL7 END-EXEC.
+010990     EXIT. 
+
+011010  A500-CREATE-SEQUENCE.
+011020      EXEC SQL
+011030      CREATE SEQUENCE TXN_CMP_SSR START WITH 1
+011040                      INCREMENT BY 1
+011050      END-EXEC.
+011060  
+011070  A500-EXIT.
+011080      EXIT.
+
+011100  A501-DEC-CURSOR.
+011110       EXEC SQL DECLARE GETDETL2 CURSOR FOR
+011120       SELECT    TXN_CMP_SSR.nextval
+011130       FROM DUAL
+011140       END-EXEC.
+011150       EXEC SQL OPEN GETDETL2 END-EXEC.
+011160  A501-EXIT.
+011170      EXIT.
+011180
+011190  A502-FETCH-CURSOR.
+011200        EXEC SQL FETCH GETDETL2
+011210                 INTO  :WA-TRAN-NO
+011220        END-EXEC.
+
+011240  A502-EXIT.
+011250        EXEC SQL CLOSE GETDETL2 END-EXEC
+011260      EXIT.
+011270
+011280
+011290  A503-DROP-SEQUENCE.
+011300       EXEC SQL
+011310            DROP SEQUENCE TXN_CMP_SSR
+011320       END-EXEC.
+
+011340  A503-EXIT.
+011350      EXIT.
+
+011370  A400-GENERATE-20.
+011380     STRING ":20:"          DELIMITED BY SIZE
+011390              WA-TRAN-NO    DELIMITED BY SIZE
+011400              INTO WA-REC1
+011410     MOVE WA-REC1     TO FINAL-REC
+011420     WRITE FINAL-REC.
+
+011440  A400-EXIT.
+011450      EXIT.
+
+011470  A300-GENERATE-BIC.
+011480     STRING "{1:F01"         DELIMITED BY SIZE
+011490            WA-BIC-CODE      DELIMITED BY SIZE
+V75081*********************START 75081************************
+011510*****************START OF IR 74423  ***************************
+011520             "0000000000}"    DELIMITED BY SIZE
+011530*            "0000}"          DELIMITED BY SIZE
+011540*****************END OF IR 74423  ***************************
+V75081********************END 75081***************************
+011560            "{2:I940"        DELIMITED BY SIZE
+011570            WA-BIC-CODE      DELIMITED BY SIZE 
+011580*****************START OF IR 74423  ***************************
+011590*            "N2}{4:"        DELIMITED BY SIZE
+011600            "N}{4:"          DELIMITED BY SIZE
+011610*****************END OF IR 74423  ***************************
+011620            INTO WA-REC0
+011630     MOVE WA-REC0     TO FINAL-REC
+011640     WRITE FINAL-REC.
+
+011660  A300-EXIT.
+011670      EXIT.
+
+011690  A401-GENERATE-25.
+S20619     MOVE WS-ACT-NO                TO UT0151CA-ACCT-IN
+S20619     MOVE SOC-ACCT-NO-FORMAT       TO UT0151CA-FORMAT
+011720     MOVE 2 TO  UT0151CA-CALL-FUNC
+011730     MOVE SOC-CHK-DGT   TO       UT0151CA-CHK-DGT-TYPE
+011740     CALL "UT0151" USING UT0151CA-CALL-AREA
+S20619     MOVE UT0151CA-ACCT-EX        TO WS-ACT-NO-CHK-DGT
+011760     STRING ":25:"             DELIMITED BY SIZE
+011770            WS-ACT-NO-CHK-DGT  DELIMITED BY SIZE
+011780            INTO WA-REC2
+011790     MOVE WA-REC2     TO FINAL-REC
+011800     WRITE FINAL-REC.
+
+011820  A401-EXIT.
+011830      EXIT.
+
+011850  A402-GENERATE-28C.
+011860     STRING ":28C:"          DELIMITED BY SIZE
+011870             WA-STMNT-NO     DELIMITED BY SIZE
+011880             "/"             DELIMITED BY SIZE
+011890             "00001"         DELIMITED BY SIZE             
+011900              INTO WA-REC3.
+011910     MOVE WA-REC3     TO FINAL-REC
+011920     WRITE FINAL-REC.
+
+011940  A402-EXIT.
+011950      EXIT.
+
+011970  A403-GENERATE-60.
+011980    IF WA-FLAG = 'F'
+011990       IF WA-OPEN-BAL IS NEGATIVE
+012000          MOVE "-" TO WA-SIGN
+012010       ELSE
+012020          MOVE SPACES TO WA-SIGN
+012030       END-IF
+012040       END-IF.
+012050    IF WA-FLAG = 'F'
+012060       IF WA-SIGN = '-'
+012070          MOVE 'D'   TO WA-IND
+012080       ELSE
+012090          MOVE 'C'   TO WA-IND
+012100       END-IF
+012110    END-IF.
+012120    MOVE ZEROS              TO WA-I.
+V75081*****************START OF IR 75081*********************
+V75081     IF WS-CURR = 'ACD' OR 'ACE'
+V75081       OPEN INPUT BGL-CURR
+V75081       MOVE "N" TO WA-ACCT-FOUND
+V75081       PERFORM R100-READ-CARD-CURR THRU R100-EXIT
+V75081                      UNTIL WA-ACCT-FOUND = "Y"
+V75081       CLOSE BGL-CURR
+V75081     END-IF
+V75081******************END OF IR 75081**********************       
+012220    STRING ":60F"            DELIMITED BY SIZE
+012230           ":"              DELIMITED BY SIZE
+012240            WA-IND          DELIMITED BY SIZE
+012250            WA-TRAN-YY      DELIMITED BY SIZE
+012260            WA-TRAN-MM      DELIMITED BY SIZE
+012270            WA-TRAN-DD      DELIMITED BY SIZE
+012280            WS-CURR         DELIMITED BY SIZE
+012290    INTO    WA-R4.
+012300    MOVE WA-OPEN-BAL TO WA-TEMP-BAL.
+012310    MOVE WA-TEMP-BAL(1:14) TO WS-T1.
+012320    MOVE WA-TEMP-BAL(15:3)  TO WS-T3.
+012330    PERFORM VARYING WA-S FROM 1 BY 1
+012340            UNTIL WS-T1(WA-S:1)  NOT = ' '
+012350    END-PERFORM.
+012360    PERFORM VARYING WA-W FROM 3 BY -1
+012370    UNTIL  WS-T3(WA-W:1) NOT = ZEROS
+012380    END-PERFORM.
+012390    COMPUTE WA-W = WA-W + 16 .
+012400    IF WS-T3 = ZEROS
+012410      COMPUTE WW-B = WA-W - WA-S
+012420      MOVE WS-TEMP-BALANCE(WA-S:WW-B) TO WA-OPENING-BAL04
+012430    ELSE
+012440      COMPUTE WA-W = WA-W - WA-S
+012450      MOVE WS-TEMP-BALANCE(WA-S:WA-W) TO WA-OPENING-BAL04
+012460    END-IF.
+012470    IF WA-OPEN-BAL = ZEROS
+012480      MOVE '0,' TO WA-OPENING-BAL04
+012490    END-IF.
+012500    MOVE  WA-REC4 TO FINAL-REC
+012510    WRITE FINAL-REC.
+012520  A403-EXIT.
+012530      EXIT.
+
+012550  A404-GENERATE-61.
+012560    IF WA-AMT1 IS NEGATIVE
+012570       MOVE "-" TO WB-SIGN
+012580    ELSE
+012590       MOVE SPACES TO WB-SIGN
+012600    END-IF.
+012610    IF WB-SIGN = '-'
+012620       MOVE 'D'   TO WB-IND
+012630    ELSE
+012640       MOVE 'C'   TO WB-IND
+012650    END-IF.
+012660
+012670    COMPUTE WA-TEMP-AMNT = WA-TEMP-AMNT + WA-AMT1
+012680    MOVE ZEROS TO WA-I.
+012690    STRING ":61:"              DELIMITED BY SIZE
+012700*******************START OF IR 74646******************
+012710*            WA-TRAN-YY         DELIMITED BY SIZE
+012720*            WA-TRAN-MM         DELIMITED BY SIZE
+012730*            WA-TRAN-DD         DELIMITED BY SIZE
+012740            WA-VAL-YY          DELIMITED BY SIZE
+012750            WA-VAL-MM          DELIMITED BY SIZE
+012760            WA-VAL-DD          DELIMITED BY SIZE
+012770*******************END OF IR 74646******************
+012780            WA-TRAN-MM         DELIMITED BY SIZE
+012790            WA-TRAN-DD         DELIMITED BY SIZE
+012800            WB-IND             DELIMITED BY SIZE
+012810    INTO    WA-R5.
+012820   MOVE WA-AMT1               TO WA-TRAN-AMOUNT.
+012830
+012840   MOVE WA-TRAN-AMOUNT(1:14)  TO WA-AMT-PART1.
+012850   MOVE ','                   TO WA-AMT-PART2.
+012860   MOVE WA-TRAN-AMOUNT(15:3)  TO WA-AMT-PART3.
+012870
+012880   MOVE 1 TO WA-CO.
+012890   IF WA-AMT-PART1-RE = ZEROS
+012900      MOVE ZEROS TO WA-AMT-PART1
+012910      MOVE 14 TO WA-CO
+012920   END-IF.
+012930   PERFORM VARYING WA-CO FROM 1 BY 1
+012940   UNTIL  WA-NO(WA-CO) NOT = ZEROS OR WA-CO = 14
+012950   END-PERFORM.
+012960
+012970   MOVE 1 TO WB-CO.
+012980   IF WA-AMT-PART3-RE = ZEROS
+012990      MOVE 'A' TO P-IND
+013000   ELSE
+013010      PERFORM VARYING WB-CO FROM 3 BY -1
+013020      UNTIL  WB-NO(WB-CO) NOT = ZEROS
+013030      END-PERFORM
+013040      MOVE SPACES TO P-IND
+013050   END-IF.
+013060
+PPPPPP***************START OF IR 25100075***********************
+013080*  MOVE WA-BR-REF      TO WA-PART-BR-REF
+PPPPPP   IF ((WA-TRAN-CODE = 20045 OR 20055) AND (WA-NM-FLG = 'Y'))
+PPPPPP    INITIALIZE WA-NARR-REF
+PPPPPP    PERFORM P100-REFNO-NTRF THRU P100-REFNO-EXIT
+PPPPPP   ELSE
+PPPPPP    MOVE WA-BR-REF      TO WA-PART-BR-REF
+PPPPPP   END-IF
+PPPPPP******************END OF IR 25100075**********************
+013160   MOVE WA-CORR-REF    TO WA-PART-CORR-REF
+013170   MOVE WA-SR-NO       TO WA-MFX-SR-NO
+013180   MOVE SPACES         TO WA-REC5
+013190   IF P-IND = 'A'
+013200   STRING WA-R5                          DELIMITED BY SIZE
+013210          WA-AMT-PART1(WA-CO:15 - WA-CO) DELIMITED BY SIZE
+013220          WA-AMT-PART2                   DELIMITED BY SIZE
+013230          WA-NTRF                        DELIMITED BY SIZE
+013240          WA-PART-BR-REF                 DELIMITED BY SIZE
+013250*****************START OF IR 74423  ***************************
+013260          "//"                           DELIMITED BY SIZE
+013270*****************END OF IR 74423  ***************************
+013280          WA-PART-CORR-REF               DELIMITED BY SIZE
+013290*****************START OF IR 74423  ***************************
+013300*          WA-MFX-SR-NO                   DELIMITED BY SIZE
+013310*****************END OF IR 74423  ***************************
+013320          INTO  WA-REC5
+013330   ELSE
+013340   STRING WA-R5                          DELIMITED BY SIZE
+013350          WA-AMT-PART1(WA-CO:15 - WA-CO) DELIMITED BY SIZE
+013360          WA-AMT-PART2                   DELIMITED BY SIZE
+013370          WA-AMT-PART3(1:WB-CO)          DELIMITED BY SIZE
+013380          WA-NTRF                        DELIMITED BY SIZE
+013390          WA-PART-BR-REF                 DELIMITED BY SIZE
+013400*****************START OF IR 74423  ***************************
+013410          "//"                           DELIMITED BY SIZE
+013420*****************END OF IR 74423  ***************************
+013430          WA-PART-CORR-REF               DELIMITED BY SIZE
+013440*****************START OF IR 74423  ***************************
+013450*          WA-MFX-SR-NO                   DELIMITED BY SIZE
+013460*****************END OF IR 74423  ***************************
+013470          INTO  WA-REC5
+013480   END-IF.
+013490   MOVE WA-REC5  TO FINAL-REC
+013500   WRITE FINAL-REC.
+013510*****************START OF IR 74423  ***************************
+013520   MOVE SPACES TO FINAL-REC
+013530   STRING WA-MFX-SR-NO                   DELIMITED BY SIZE
+013540          INTO FINAL-REC.
+013550   WRITE FINAL-REC.
+013560*****************END OF IR 74423  ***************************
+
+013580 A404-EXIT.
+013590     EXIT.
+
+013610  A405-GENERATE-62.
+013620    IF FLAG1 = 0
+013630       COMPUTE WA-CLOS-AMNT = WA-OPEN-BAL-TEM + WA-TEMP-AMNT
+013640    END-IF.
+013650    IF WA-CLOS-AMNT IS NEGATIVE
+013660       MOVE '-' TO WC-SIGN
+013670    ELSE
+013680       MOVE ' ' TO WC-SIGN
+013690    END-IF.
+013700    IF WC-SIGN = '-'
+013710       MOVE 'D'   TO WC-IND
+013720    ELSE
+013730       MOVE 'C'   TO WC-IND
+013740    END-IF.
+013750
+013760    STRING ":62F:"              DELIMITED BY SIZE
+013770           WC-IND               DELIMITED BY SIZE
+013780           WA-TRAN-YY           DELIMITED BY SIZE
+013790           WA-TRAN-MM           DELIMITED BY SIZE
+013800           WA-TRAN-DD           DELIMITED BY SIZE
+013810           WS-CURR              DELIMITED BY SIZE 
+013820    INTO WA-R6.
+013830    MOVE  WA-CLOS-AMNT         TO WA-CLOS-AMNT1.
+013840    MOVE  WA-CLOS-AMNT1(1:14)  TO WC-PART1.
+013850    MOVE  WA-CLOS-AMNT1(15:3)  TO WC-PART3.
+013860    PERFORM VARYING WE-A FROM 1 BY 1 UNTIL
+013870      WC-PART1(WE-A:1) NOT = ' '
+013880    END-PERFORM.
+013890    PERFORM VARYING WE-B FROM 3 BY -1
+013900    UNTIL  WC-PART3(WE-B:1) NOT = ZEROS
+013910    END-PERFORM.
+013920    COMPUTE WE-B = WE-B + 16.
+013930    IF WC-PART3 = ZEROS
+013940       COMPUTE WE-C = WE-B - WE-A
+013950       MOVE WA-CLOS-AMNT2(WE-A:WE-C) TO WA-CLOS-AMNT6
+013960    ELSE
+013970       COMPUTE WE-D = WE-B - WE-A
+013980       MOVE WA-CLOS-AMNT2(WE-A:WE-D)  TO WA-CLOS-AMNT6
+013990    END-IF.
+014000    IF WA-CLOS-AMNT = ZEROS
+014010       MOVE '0,' TO WA-CLOS-AMNT6
+014020    END-IF.
+014030    MOVE WA-REC6  TO FINAL-REC.
+014040    WRITE FINAL-REC.
+014050    MOVE WA-MESSAGE-END       TO FINAL-REC
+014060    STRING WA-MESSAGE-END DELIMITED BY SIZE
+014070           INTO    FINAL-REC.
+014080    WRITE FINAL-REC
+014090    MOVE 0 TO FLAG1.
+
+014110  A405-EXIT.
+014120      EXIT.
+
+TTTTTT A406-GENERATE-86.
+TTTTTT  MOVE WA-TRAN-CODE TO WA-R8-TRAN-CODE
+TTTTTT  PERFORM A360-CALL-UT0250 THRU A360-CALL-UT0250-EXIT.
+TTTTTT  MOVE WA-REC8 TO FINAL-REC.
+TTTTTT  WRITE FINAL-REC.
+
+TTTTTT A406-EXIT.
+TTTTTT EXIT.
+
+TTTTTT A360-CALL-UT0250.
+T74072   INITIALIZE WA-R8-DESC-TEMP
+TTTTTT   PERFORM A360-CALL-TO-UT0250 THRU A360-CALL-TO-UT0250-EXIT.
+TTTTTT   IF LINK-OUT-STAT = "****"
+TTTTTT      MOVE LINK-IN-TXCODE TO WA-R8-TRAN-CODE
+TTTTTT      MOVE LINK-TRAN-DESC TO WA-R8-DESC-TEMP
+TTTTTT      INITIALIZE WS-TALLY
+T74072      INITIALIZE WS-DESC-LENGTH
+TTTTTT      INSPECT WA-R8-DESC-TEMP TALLYING WS-TALLY
+TTTTTT                              FOR TRAILING SPACES
+TTTTTT      COMPUTE WS-DESC-LENGTH  = LENGTH OF WA-R8-DESC-TEMP
+TTTTTT                                               - WS-TALLY
+TTTTTT   END-IF.
+
+TTTTTT A360-CALL-UT0250-EXIT.
+TTTTTT    EXIT.
+TTTTTT
+TTTTTT A360-CALL-TO-UT0250.
+TTTTTT   MOVE 02                         TO LINK-IN-CALL-CODE.
+TTTTTT   MOVE '003'                      TO LINK-IN-SOC-NO.
+TTTTTT   MOVE WA-TRAN-CODE               TO LINK-IN-TXCODE.
+TTTTTT   CALL "UT0250"                   USING UT0250CA-CALL-AREA.
+
+TTTTTT A360-CALL-TO-UT0250-EXIT.
+TTTTTT   EXIT.
+
+014490 A000-PROCESS.
+014500   MOVE "003" TO WS-INST-NO
+014510   MOVE WS-ACT-NO TO WA-GLDM-ACT-NO 
+014520   MOVE WS-GLDM-KEY TO SQ-GLDM-KEY.
+014530      EXEC SQL
+014540       DECLARE GLDM_CUR1 CURSOR FOR
+014550       SELECT CUM_CURR_VAL FROM GLDM WHERE
+014560           KEY_1 = :SQ-GLDM-KEY
+014570     END-EXEC.
+014580     EXEC SQL OPEN GLDM_CUR1 END-EXEC.
+014590   PERFORM C003-GLDM-FETCH THRU C003-EXIT
+
+014610     EXEC SQL CLOSE GLDM_CUR1 END-EXEC.
+
+014630 A000-EXIT.
+014640   EXIT.
+
+014660 C003-GLDM-FETCH.
+014670     EXEC SQL
+014680       FETCH GLDM_CUR1 INTO
+014690            :WS-BGL-BALANCE
+014700     END-EXEC.
+014710    IF SQLCODE = ZEROS
+014720       MOVE  WS-BGL-BALANCE TO WA-OPEN-BAL
+014730       MOVE  WS-BGL-BALANCE TO WA-CLOS-AMNT
+014740    END-IF.
+
+014760 C003-EXIT.
+014770   EXIT.
+
+
+V75081******************START OF IR 75081******************
+
+V75081  R100-READ-CARD-CURR.
+V75081     READ BGL-CURR AT END MOVE "Y" TO WA-ACCT-FOUND.
+V75081     IF WA-ACCT-FOUND NOT = 'Y'
+V75081          IF FD-BGL-NO = WS-ACT-NO AND FD-FROM-CURR = WS-CURR
+V75081             MOVE 'Y' TO WA-ACCT-FOUND
+V75081             MOVE FD-TO-CURR TO WS-CURR
+V75081          END-IF
+V75081     END-IF.
+
+V75081  R100-EXIT.
+V75081      EXIT.
+
+V75081*********************END OF IR 75081********************
+KJKKKK****************START OF IR 23060201********************
+PPPPPP*****************START OF IR 25100075******************
+AN0909*S100-READ-SSR-BGLS.
+AS0909*PERFORM V201-READ-BGL-CARD THRU V201-CARD-EXIT
+KKKKKK*                           UNTIL WA-EOR = "Y".
+ANAN02*PERFORM G100-GECT-DETAILS  THRU G100-EXIT
+AN9090*                           UNTIL WS-COUNT = WA-X.
+AS8080*S109-EXIT.
+QD0101*    EXIT.
+
+VVVVVV*V201-READ-BGL-CARD.
+VVVVVV* SET WA-X TO 1
+VVVVVV* OPEN INPUT SSRBGL
+VVVVVV* IF WA-SSR940-STATUS NOT  = "00"
+VVVVVV*    MOVE 2      TO WS-UTSMART-SEVERE-MESSAGE
+VVVVVV*    MOVE SPACES TO UT8500CA-INPUT-MSG
+VVVVVV*    STRING "SSR940(V201): ERROR OPENING SSR940_ACC.card"
+VVVVVV*     ", FILE STATUS " WA-SSR940-STATUS
+VVVVVV*    DELIMITED BY SIZE INTO UT8500CA-INPUT-MSG
+VVVVVV*    PERFORM A700-UT8500 THRU A799-EXIT
+VVVVVV*    CLOSE SSRBGL
+VVVVVV* ELSE
+VVVVVV*    PERFORM V202-SSR-BGL-ARRY THRU V202-ARRY-EXIT
+VVVVVV*                             UNTIL WA-EOR = "Y"
+VVVVVV* END-IF.
+VVVVVV*V201-CARD-EXIT.
+VVVVVV*   EXIT.
+
+VVVVVV*V202-SSR-BGL-ARRY.
+VVVVVV*    READ SSRBGL AT END MOVE "Y" TO WA-EOR.
+VVVVVV*    IF WA-X > 99
+VVVVVV*       MOVE "Y"    TO WA-EOR
+VVVVVV*       MOVE 2      TO WS-UTSMART-SEVERE-MESSAGE
+VVVVVV*       MOVE SPACES TO UT8500CA-INPUT-MSG
+VVVVVV*       STRING "SSR940(V202)INDEX OUT OF RANGE FOR "
+VVVVVV*           " FILE SSR940_ACC.card"
+VVVVVV*       DELIMITED BY SIZE INTO UT8500CA-INPUT-MSG
+VVVVVV*       PERFORM A700-UT8500 THRU A799-EXIT
+VVVVVV*   END-IF
+VVVVVV*   IF WA-EOR = 'Y'
+VVVVVV*       CLOSE SSRBGL
+VVVVVV*   ELSE
+VVVVVV*       MOVE FD-BGL-ACCT     TO WA-BGL-ACCT(WA-X)
+VVVVVV*       SET WA-X UP BY 1
+VVVVVV*       GO TO V202-SSR-BGL-ARRY
+VVVVVV*   END-IF.
+VVVVVV*V202-ARRY-EXIT.
+VVVVVV*   EXIT.
+
+AMITKS*A700-UT8500.
+AMITKS*     MOVE 3  TO WS-UTSMART-CALL-CODE
+AMITKS*     CALL "UTSMART" USING WS-UTSMART-RECORD
+AMITKS*     MOVE UT8500CA-FUNC-NORMAL-DISPLAY
+AMITKS*      TO UT8500CA-CALL-CODE
+AMITKS*     MOVE "N" TO UT8500CA-RESPONSE-REQD-FLAG
+AMITKS*     CALL "UT8500"   USING      UT8500CA-AREA.
+AMITKS*A799-EXIT.
+AMITKS*    EXIT.
+
+PPPPPP P100-REFNO-NTRF.
+PPPPPP       EXEC SQL
+015560       SELECT /*+ INDEX(GECT GECTUK_04) */
+015570            substr(var_area,13,16)
+PPPPPP            INTO :WA-NARR-REF
+015590       FROM
+015600            GECT
+015610       WHERE
+015620            (INST_NO = '003'      AND
+015630             ACCT_NO = :WS-ACT-NO AND
+015640             TRAN_TYPE = '20'     AND
+015650             TRAN_DATE = :WA-DATE AND
+015660             JRNL_NO = :WA-JRNL)
+015670       END-EXEC.
+PPPPPP       IF SQLCODE = ZEROS OR 1403
+PPPPPP         IF WA-NARR-REF <> SPACES
+PPPPPP          MOVE WA-NARR-REF TO WA-PART-BR-REF
+PPPPPP         ELSE
+PPPPPP          MOVE WA-BR-REF   TO WA-PART-BR-REF
+PPPPPP         END-IF
+PPPPPP       ELSE
+PPPPPP         MOVE SPACES TO WA-PART-BR-REF
+PPPPPP       END-IF.
+PPPPPP P100-REFNO-EXIT.
+PPPPPP  EXIT.
+PPPPPP******************END OF IR 25100075**********************
+JDKDKJ*****************END OF IR 23060201*****************************
