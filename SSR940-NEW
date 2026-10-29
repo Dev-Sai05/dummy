@@ -1,831 +1,1062 @@
-       IDENTIFICATION DIVISION.
-       PROGRAM-ID. SSR940MS.
-      ******************************************************************
-      * PROGRAM:- SSR940MS (VISUAL COBOL MICROSERVICE MODULE)          *
-      * PURPOSE:- GENERATE SWIFT MT940 STATEMENT FOR A SINGLE ACCOUNT  *
-      *           WITHOUT BATCH SEQUENTIAL FILES OR DDL LOCKS.         *
-      ******************************************************************
-       ENVIRONMENT DIVISION.
-       CONFIGURATION SECTION.
-       SPECIAL-NAMES.
-           CONSOLE IS CONS.
+ROHITH$SET TRACE
+000640  IDENTIFICATION DIVISION.
+000650  PROGRAM-ID. SSR940S.
+000660  ENVIRONMENT DIVISION.
+000670  CONFIGURATION SECTION.
+000680  SOURCE-COMPUTER. VAX.
+000690  OBJECT-COMPUTER. VAX.
+000700  SPECIAL-NAMES.
+000710  CONSOLE IS CONS.
+000720  INPUT-OUTPUT SECTION.
+000730  FILE-CONTROL.
+V75081*******************START OF IR 75081***************
+V75081  SELECT BGL-CURR   ASSIGN TO "$card/CURRCONVERT.card"
+V75081  ORGANIZATION IS LINE SEQUENTIAL.
+V75081*******************END OF IR 75081*****************
+000990  DATA DIVISION.
+001000  FILE SECTION.
+V75081*********************START OF IR 75081******************
+V75081  FD BGL-CURR.
+V75081  01 BGL-CURR-RECORD.
+V75081     03 FD-BGL-NO                       PIC X(16).
+V75081     03 FILLER                          PIC X(01).
+V75081     03 FD-FROM-CURR                    PIC X(03).
+V75081     03 FILLER                          PIC X(01).
+V75081     03 FD-TO-CURR                      PIC X(03).
+V75081*********************END OF IR 75081********************
+001350  WORKING-STORAGE SECTION.
+ROHITH***************START OF 24080121*********************
+ROHITH      COPY TRENMAST IN LIBRYMIS.
+ROHITH***************END   OF 24080121*********************
+001390  01 WORK-AREA.
+001400     03 WA-PARM.
+001410        05 PARM-DATA.
+001420           07 FILLER                    PIC X(12).
+001430           07 PARAM-SOC                 PIC 9(03).
+001440           07  FILLER                   PIC X(01).
+001450           07  PARAM-LANGUAGE           PIC 9.
+001460           07  FILLER                   PIC X(01).
+001470           07  PARAM-BRANCH-CODE        PIC 9(16).
+001480           07  FILLER                   PIC X(01).
+001490           07  PARAM-CARD-DATE          PIC 9(08).
 
-       DATA DIVISION.
-       WORKING-STORAGE SECTION.
-           EXEC SQL INCLUDE SQLCA END-EXEC.
+001510      EXEC SQL BEGIN DECLARE SECTION END-EXEC.
+001520  
+001530  01 WS-ACT-NO                            PIC X(16).
+001540  01 WS-ACT-NO-CHK-DGT                    PIC X(17).
+001550  01 WS-FD-CODE                           PIC X(05).
+001560  01 WS-CURR                              PIC X(03).
+001570  01 WA-DATE                              PIC 9(09) BINARY.
+001580  01 DEAL-DT                              PIC X(09).
+001620  01 WA-SR-NO                             PIC X(09).
+001630  01 WA-DEAL-DATE                         PIC X(08).
+001640  01 WA-BRANCH                            PIC X(05).
+001650  01 WA-BR-REF                            PIC X(16).
+001660  01 WA-JRNL                              PIC 9(09).
+001670************START OF IR 74646 ***************************
+001680  01 WA-VAL-DATE                          PIC X(08).
+001690  01 WA-VALUE-DATE REDEFINES WA-VAL-DATE.   
+001700     03 WA-VAL-DD                      PIC 9(2).
+001710     03 WA-VAL-MM                      PIC 9(2).
+001720     03 WA-VAL-CC                      PIC 9(2).
+001730     03 WA-VAL-YY                      PIC 9(2).
+001740************END OF IR 74646 ***************************
+001750  01 WA-AMT1                              PIC S9(14)V999
+001760                                        SIGN TRAILING SEPARATE.
+001770  01 WA-BAL                               PIC S9(14)V999
+001780                                        SIGN TRAILING SEPARATE.
+001790  01 WA-OPEN-BAL                          PIC S9(14)V999
+001800                                        SIGN TRAILING SEPARATE.
+001810  01 WA-OPEN-BAL-TEM                      PIC S9(14)V999
+001820                                        SIGN TRAILING SEPARATE.
 
-           EXEC SQL BEGIN DECLARE SECTION END-EXEC.
-       01  WS-ACT-NO                            PIC X(16).
-       01  WS-ACT-NO-CHK-DGT                    PIC X(17).
-       01  WS-FD-CODE                           PIC X(05).
-       01  WS-CURR                              PIC X(03).
-       01  WA-DATE                              PIC 9(09) BINARY.
-       01  DEAL-DT                              PIC X(09).
-       01  WA-SR-NO                             PIC X(09).
-       01  WA-DEAL-DATE                         PIC X(08).
-       01  WA-BRANCH                            PIC X(05).
-       01  WA-BR-REF                            PIC X(16).
-       01  WA-JRNL                              PIC 9(09).
-       01  WA-VAL-DATE                          PIC X(08).
-       01  WA-VALUE-DATE REDEFINES WA-VAL-DATE.
-           03 WA-VAL-DD                         PIC 9(02).
-           03 WA-VAL-MM                         PIC 9(02).
-           03 WA-VAL-CC                         PIC 9(02).
-           03 WA-VAL-YY                         PIC 9(02).
-       01  WA-AMT1                              PIC S9(14)V999
-                                                SIGN TRAILING SEPARATE.
-       01  WA-BAL                               PIC S9(14)V999
-                                                SIGN TRAILING SEPARATE.
-       01  WA-OPEN-BAL                          PIC S9(14)V999
-                                                SIGN TRAILING SEPARATE.
-       01  WA-OPEN-BAL-TEM                      PIC S9(14)V999
-                                                SIGN TRAILING SEPARATE.
-       01  WA-BIT                               PIC 9.
-       01  WA-CORR-REF                          PIC X(16).
-       01  WA-TRAN-CODE                         PIC 9(05).
-       01  WG-NARR                              PIC X(30).
-       01  WA-TRAN-NO                           PIC X(09).
-       01  WA-BIC-CODE                          PIC X(12).
-       01  SQ-GLDM-KEY                          PIC X(19).
-       01  WA-NARR-REF                          PIC X(16).
-       01  WS-BGL-BALANCE                       PIC S9(17)V9(3).
-           EXEC SQL END DECLARE SECTION END-EXEC.
+001840  01 WA-BIT                               PIC 9.
+001850  01 WA-CORR-REF                          PIC X(16). 
+001860  01 WA-TRAN-CODE                         PIC 9(05).
+001870  01 WG-NARR                              PIC X(30).
+001880  01 WA-TRAN-NO                           PIC X(09).
+001890  01 WA-BIC-CODE                          PIC X(12).
+001900  01 SQ-GLDM-KEY                          PIC X(19).
+PPPPPP******************START OF IR 25100075********************
+PPPPPP  01 WA-NARR-REF                          PIC X(16).
+PPPPPP*******************END OF IR 25100075*********************
+001940      EXEC SQL END DECLARE SECTION END-EXEC.
+001950      EXEC SQL INCLUDE SQLCA END-EXEC.
+001960  
+001970 01 WS-GLDM-KEY.
+001980    03 WS-INST-NO                 PIC X(3).
+001990    03 WA-GLDM-ACT-NO             PIC X(16).
 
-       01  WS-GLDM-KEY.
-           03 WS-INST-NO                        PIC X(03).
-           03 WA-GLDM-ACT-NO                    PIC X(16).
+002010 01 WS-BGL-BALANCE                PIC S9(17)V9(3).
+V75081************START OF IR 75081 ***************************
+002090  01 WA-REC0                              PIC X(55).
+V75081************END OF IR 75081 ***************************
+002110  01 WA-REC1                              PIC X(13).
+002120  01 WA-REC2                              PIC X(21).
+002130  01 WA-REC3                              PIC X(16).
+002140  01 WA-REC4.
+002150     03 WA-R4                             PIC X(15).
+002160     03 WA-OPENING-BAL04                  PIC X(18).
+002190 01 WA-REC5                               PIC X(71).
+002210 01 WA-R5                                 PIC X(15).
+002220 01 WA-TRAN-AMT.
+002230      03 WA-AMT-PART1                   PIC 9(14) VALUE ZEROS.
+002240      03 WA-AMT-PART1-RE REDEFINES WA-AMT-PART1.
+002250           05 WA-NO OCCURS 14 TIMES PIC 9.
+002260      03 WA-AMT-PART2                   PIC X VALUE ",".
+002270      03 WA-AMT-PART3                   PIC 9(03) VALUE ZEROS.
+002280      03 WA-AMT-PART3-RE REDEFINES WA-AMT-PART3.
+002290           05 WB-NO OCCURS 3 TIMES PIC 9.
+002300 01 WA-NTRF                              PIC X(04)
+002310                                      VALUE 'NTRF'.
+002320 01 WA-PART-BR-REF                       PIC X(16).
+002330 01 WA-PART-CORR-REF                     PIC X(16).
+002340 01 WA-MFX-SR-NO                         PIC X(09).
+002350  01 WA-REC6.
+002360     03 WA-R6                            PIC X(15).
+002370     03 WA-CLOS-AMNT6                    PIC X(18).
 
-       01  WA-REC0                              PIC X(55).
-       01  WA-REC1                              PIC X(13).
-       01  WA-REC2                              PIC X(21).
-       01  WA-REC3                              PIC X(16).
-       01  WA-REC4.
-           03 WA-R4                             PIC X(15).
-           03 WA-OPENING-BAL04                  PIC X(18).
-       01  WA-REC5                              PIC X(71).
-       01  WA-R5                                PIC X(15).
-       01  WA-TRAN-AMT.
-           03 WA-AMT-PART1                      PIC 9(14) VALUE ZEROS.
-           03 WA-AMT-PART1-RE REDEFINES WA-AMT-PART1.
-              05 WA-NO OCCURS 14 TIMES          PIC 9.
-           03 WA-AMT-PART2                      PIC X VALUE ",".
-           03 WA-AMT-PART3                      PIC 9(03) VALUE ZEROS.
-           03 WA-AMT-PART3-RE REDEFINES WA-AMT-PART3.
-              05 WB-NO OCCURS 3 TIMES           PIC 9.
-       01  WA-NTRF                              PIC X(04) VALUE 'NTRF'.
-       01  WA-PART-BR-REF                       PIC X(16).
-       01  WA-PART-CORR-REF                     PIC X(16).
-       01  WA-MFX-SR-NO                         PIC X(09).
-       01  WA-REC6.
-           03 WA-R6                             PIC X(15).
-           03 WA-CLOS-AMNT6                     PIC X(18).
+002390 01 FLAG-62                              PIC 9.
 
-       01  FLAG-62                              PIC 9.
-       01  WA-CLOS-AMNT                         PIC S9(14)V999.
-       01  WA-CLOS-AMNT1                        PIC X(17).
-       01  WA-CLOS-AMNT2.
-           03 WC-PART1                          PIC Z(13)9.
-           03 WC-PART2                          PIC X VALUE ','.
-           03 WC-PART3.
-              05 WC-PART3A                      PIC X(02).
-              05 WC-PART3B                      PIC X.
+002410  01 WA-CLOS-AMNT                        PIC S9(14)V999.
+002420  01 WA-CLOS-AMNT1                       PIC X(17).
+002430  01 WA-CLOS-AMNT2.
+002440     03 WC-PART1                         PIC Z(13)9.
+002450     03 WC-PART2                         PIC X VALUE ','.
+002460     03 WC-PART3.
+002470        05 WC-PART3A                     PIC X(02).
+002480        05 WC-PART3B                     PIC X.
 
-       01  WA-INDEX                             PIC 9(02) VALUE ZEROS.
-       01  FLAG1                                PIC 9.
-       01  WA-MESSAGE-END                       PIC X(03) VALUE "-}$".
+002500 01  WA-INDEX                            PIC 9(02) VALUE ZEROS.
+002510 01  FLAG1                               PIC 9.
 
-       01  WC-SIGN                              PIC X.
-       01  WC-IND                               PIC X(01).
-       01  WE-C                                 PIC 9(04).
-       01  WE-D                                 PIC 9(04).
-       01  WE-A                                 PIC 9(04).
-       01  WE-B                                 PIC 9(04).
+002560 01 WA-MESSAGE-END                       PIC X(03) VALUE
+002570                                         "-}$".
 
-       01  WA-REC8.
-           03 WA-R8-86                          PIC X(04) VALUE ":86:".
-           03 WA-R8-TRAN-CODE                   PIC X(06).
-           03 WA-FILL1                          PIC X(01) VALUE ":".
-           03 WA-R8-DESC-TEMP                   PIC X(15).
-       01  WS-TALLY                             PIC 9(02) VALUE ZERO.
-       01  WS-DESC-LENGTH                       PIC 9(02) VALUE ZERO.
-       01  EXIT-TRAN                            PIC 9.
-       01  WA-CO                                PIC 9(02).
-       01  WB-CO                                PIC 9(02).
-       01  P-IND                                PIC X(01).
-       01  WA-I                                 PIC 9(04).
+002600 01 WC-SIGN                             PIC X.
+002610 01 WC-IND                              PIC X(01).
+002620 01 WE-C                                PIC 9(04).
+002630 01 WE-D                                PIC 9(04).
+002640 01 WE-A                                PIC 9(04).
+002650 01 WE-B                                PIC 9(04).
 
-       01  WA-IND                               PIC X(01).
-       01  WA-SIGN                              PIC X(01).
-       01  WA-FLAG                              PIC X(01).
-       01  WS-TEMP-BALANCE.
-           03 WS-T1                             PIC Z(14).
-           03 WS-T2                             PIC X VALUE ",".
-           03 WS-T3.
-              05 WS-T3-A                        PIC X(02).
-              05 WS-T3-B                        PIC X.
-       01  WA-S                                 PIC 9(04).
-       01  WA-W                                 PIC 9(04).
-       01  WW-B                                 PIC 9(04).
-       01  WA-PREV-ACT-NO                       PIC X(16).
+TTTTTT 01 WA-REC8.
+TTTTTT    03 WA-R8-86                         PIC X(4) VALUE ":86:".
+TTTTTT    03 WA-R8-TRAN-CODE                  PIC X(6).
+TTTTTT    03 WA-FILL1                         PIC X(1) VALUE ":".
+TTTTTT    03 WA-R8-DESC-TEMP                  PIC X(15).
+TTTTTT 01 WS-TALLY                            PIC 9(2) VALUE ZERO.
+TTTTTT 01 WS-DESC-LENGTH                      PIC 9(2) VALUE ZERO.
+TTTTTT 01 EXIT-TRAN                           PIC 9.
+002750  01 WA-CO                              PIC 9(02).
+002760  01 WB-CO                              PIC 9(02).
+002770  01 P-IND                              PIC X(01).
+002780  01 WA-I                               PIC 9(04).
 
-       01  WA-TRAN-DATE1.
-           03 WA-TRAN-DD                        PIC 9(02).
-           03 WA-TRAN-MM                        PIC 9(02).
-           03 WA-TRAN-CC                        PIC 9(02).
-           03 WA-TRAN-YY                        PIC 9(02).
+002800  01 WA-IND                             PIC X(01).
+002810  01 WA-SIGN                            PIC X(01).
+002820  01 WA-FLAG                            PIC X(01).
+002830  01 WS-TEMP-BALANCE.
+002840     03 WS-T1                           PIC Z(14).
+002850     03 WS-T2                           PIC X VALUE ",".
+002860     03 WS-T3.
+002870        05 WS-T3-A                      PIC X(02).
+002880        05 WS-T3-B                      PIC X.
+002890  01 WA-S                               PIC 9(04).
+002900  01 WA-W                               PIC 9(04).
+002910  01 WW-B                               PIC 9(04).
+002920  01 WA-PREV-ACT-NO                     PIC X(16).
 
-       01  WA-TEMP-BAL-Z                        PIC Z(18).
-       01  WA-TEMP-BAL REDEFINES WA-TEMP-BAL-Z.
-           03 WA-TEMP-BAL-X                     PIC X(18).
-       01  WA-TEMP-AMNT                         PIC S9(14)V999.
-       01  WA-TRAN-AMOUNT                       PIC 9(14)V999.
+002980  01 WA-TRAN-DATE1.
+002990     03 WA-TRAN-DD                      PIC 9(2).
+003000     03 WA-TRAN-MM                      PIC 9(2).
+003010     03 WA-TRAN-CC                      PIC 9(2).
+003020     03 WA-TRAN-YY                      PIC 9(2).
 
-       01  WB-SIGN                              PIC X(01).
-       01  WB-IND                               PIC X(01).
-       01  WA-STMNT-NO                          PIC 9(05).
+003040  01 WA-TEMP-BAL-Z                      PIC Z(18).                        
+003050  01 WA-TEMP-BAL REDEFINES WA-TEMP-BAL-Z.
+003060     03 WA-TEMP-BAL-X                   PIC X(18).                        
+003070  01 WA-TEMP-AMNT                       PIC S9(14)V999.
+003080  01 WA-TRAN-AMOUNT                     PIC 9(14)V999.
 
-       01  WS-EOF                               PIC X.
-       01  WA-NM-FLG                            PIC X(01) VALUE "Y".
+003100  01 WB-SIGN                            PIC X(01).
+003110  01 WB-IND                             PIC X(01).
+003120  01 WA-STMNT-NO                        PIC 9(05).
+003130  01 WA-WORKING-DATE.
+003140     03 WA-WORKING-CC                   PIC 99.
+003150     03 WA-WORKING-YY                   PIC 99.
+003160     03 WA-WORKING-MM                   PIC 99.
+003170     03 WA-WORKING-DD                   PIC 99.
+003180  
+003190  01 WA-TODAY-BINARY-DATE               PIC 9(09) BINARY.
+003200  01 WA-CARD-DT-BINARY                  PIC 9(09) BINARY.
+003210  01 WA-EOF                             PIC X.
+003220  01 WS-EOF                             PIC X.
+003230  01 WA-TEMP-DATE.
+003240     03 WA-TEMP-DD                      PIC 99.
+003250     03 WA-TEMP-MM                      PIC 99.
+003260     03 WA-TEMP-CCYY                    PIC 9999.
 
-       01  UT0220-PARAM-AREA.
-           COPY INSPARM     IN LIBRYMIS.
-           COPY UT1999CA    IN LIBRYMIS.
-           COPY UT0030CA    IN LIBRYMIS.
-           COPY UT0020CA    IN LIBRYMIS.
-           COPY DBIOCALL    IN LIBRYMIS.
-           COPY DBIOMODNAME IN LIBRYMIS.
-           COPY DBIOMODCA   IN LIBRYMIS.
-           COPY STRTAREA    IN LIBRYMIS.
-           COPY UT0151CA    IN LIBRYMIS.
+003290  01 WA-TEMP1-DATE.
+003300     03 WA-TEMP1-DD                      PIC 99.
+003310     03 WA-TEMP1-MM                      PIC 99.
+003320     03 WA-TEMP1-CCYY                    PIC 9999.
+003330
+003340  01 WA-TEMP1-BIN-DATE                   PIC 9(09) BINARY.
 
-       01  UT0250CA-CALL-AREA.
-           COPY SYSPCALL    IN LIBRYMIS.
+V75081************************START OF IR 75081******************
+V75081  01 WA-ACCT-FOUND                       PIC X(1) VALUE "N".
+V75081************************END OF IR 75081*********************
+PPPPPP  01 WA-NM-FLG                          PIC X(01) VALUE "Y".
 
-       01  PUAREA.
-           03 WA-INPUT-PARAM-TABLE OCCURS 32 TIMES PIC X.
-           03 FIELD-B                           PIC X(04).
+003750  01 UT0220-PARAM-AREA.
+003760     COPY INSPARM     IN LIBRYMIS.
+003770     COPY UT1999CA    IN LIBRYMIS.
+003780     COPY UT0030CA    IN LIBRYMIS.
+003790     COPY UT0020CA    IN LIBRYMIS.
+003800     COPY DBIOCALL    IN LIBRYMIS.
+003810     COPY DBIOMODNAME IN LIBRYMIS.
+003820     COPY DBIOMODCA   IN LIBRYMIS.
+003830     COPY STRTAREA    IN LIBRYMIS.
+003840     COPY UT0151CA    IN LIBRYMIS.
+
+003870 01  UT0250CA-CALL-AREA.
+003880     COPY SYSPCALL IN LIBRYMIS.
+003890 
+003900 01  PUAREA.
+003910     03 WA-INPUT-PARAM-TABLE OCCURS 32 TIMES
+003920                                         PIC X.
+003930     03  FIELD-B                         PIC X(4).
 
        LINKAGE SECTION.
-       01  LNK-REQUEST.
-           03 LNK-REQ-ACCT-NO                   PIC X(16).
-           03 LNK-REQ-BRANCH                    PIC X(05).
-           03 LNK-REQ-DATE-BIN                  PIC 9(09) BINARY.
-       01  LNK-RESPONSE.
-           03 LNK-RESP-CODE                     PIC 9(03).
-           03 LNK-RESP-MESSAGE                  PIC X(80).
-           03 LNK-STATEMENT-LINE-COUNT          PIC 9(04).
-           03 LNK-STATEMENT-ARRAY OCCURS 500 TIMES.
-              05 LNK-REC-DATA                   PIC X(176).
+       01 MS-INPUT-AREA.
+          03 MS-INP-ACCT-NO                   PIC X(16).
+          03 MS-INP-BRANCH                    PIC X(05).
+          03 MS-INP-DATE                      PIC 9(08).
+       01 MS-OUTPUT-AREA.
+          03 MS-OUT-STATUS                    PIC X(02).
+          03 MS-OUT-SQLCODE                   PIC S9(09).
+          03 MS-OUT-LINE-COUNT                PIC 9(04).
+          03 MS-STATEMENT-RECORD OCCURS 500 TIMES.
+             05 MS-OUT-LINE                   PIC X(176).
 
-       PROCEDURE DIVISION USING LNK-REQUEST, LNK-RESPONSE.
+003960  PROCEDURE DIVISION USING MS-INPUT-AREA MS-OUTPUT-AREA.
+ROHITH***************START OF 24080121*********************
+ROHITH      COPY TRENMIST IN LIBRYMIS.
+ROHITH IF WA-TRACE-GET-FLAG = 'Y'
+ROHITH    DISPLAY 'START OF SSR940S'
+ROHITH    READY TRACE
+ROHITH END-IF.
+ROHITH***************END   OF 24080121*********************
 
-       0000-MAIN-PARA.
-           INITIALIZE LNK-RESPONSE
-           MOVE 200 TO LNK-RESP-CODE
-           MOVE SPACES TO LNK-RESP-MESSAGE
-           MOVE ZEROS TO LNK-STATEMENT-LINE-COUNT
+004060  A000-MAIN-PARA.
+           INITIALIZE MS-OUTPUT-AREA[span_0](start_span)[span_0](end_span)[span_1](start_span)[span_1](end_span)
+           MOVE "00" TO MS-OUT-STATUS[span_2](start_span)[span_2](end_span)[span_3](start_span)[span_3](end_span)
 
-           INITIALIZE WA-CO WB-CO P-IND WA-I WA-IND WA-SIGN[span_0](start_span)[span_0](end_span)
-                      WA-S WA-W WW-B WA-FLAG[span_1](start_span)[span_1](end_span)
-                      WA-PREV-ACT-NO[span_2](start_span)[span_2](end_span)
-                      WA-TRAN-DATE1[span_3](start_span)[span_3](end_span)
-                      WA-TEMP-BAL-Z WA-TEMP-BAL WA-TRAN-AMOUNT WB-SIGN[span_4](start_span)[span_4](end_span)
-                      WB-IND WA-STMNT-NO[span_5](start_span)[span_5](end_span)
-                      WS-EOF[span_6](start_span)[span_6](end_span)
-           MOVE ZEROS  TO WS-TALLY[span_7](start_span)[span_7](end_span)
-                          WA-TRAN-CODE[span_8](start_span)[span_8](end_span)
-                          EXIT-TRAN[span_9](start_span)[span_9](end_span)
-                          WA-DATE WA-BIT WA-JRNL[span_10](start_span)[span_10](end_span)
-                          WA-OPEN-BAL WS-BGL-BALANCE[span_11](start_span)[span_11](end_span)
-                          FLAG-62 WE-C WE-D WE-A WE-B[span_12](start_span)[span_12](end_span)
-                          WA-AMT1[span_13](start_span)[span_13](end_span)
-                          WA-BAL FLAG1 WA-OPEN-BAL-TEM[span_14](start_span)[span_14](end_span)
-                          WA-TEMP-AMNT WA-CLOS-AMNT1 WA-CLOS-AMNT[span_15](start_span)[span_15](end_span)
-           MOVE SPACES TO DEAL-DT WG-NARR[span_16](start_span)[span_16](end_span)
-                          SQ-GLDM-KEY WS-GLDM-KEY[span_17](start_span)[span_17](end_span)
-                          WA-TRAN-NO WA-BIC-CODE WA-CORR-REF[span_18](start_span)[span_18](end_span)
-                          WA-REC0 WA-REC1 WA-REC2 WA-REC3[span_19](start_span)[span_19](end_span)
-                          WA-PART-BR-REF WA-PART-CORR-REF[span_20](start_span)[span_20](end_span)
-                          WA-MFX-SR-NO[span_21](start_span)[span_21](end_span)
-                          WC-SIGN WC-IND[span_22](start_span)[span_22](end_span)
-                          WA-DEAL-DATE[span_23](start_span)[span_23](end_span)
-                          WS-ACT-NO WA-SR-NO WA-BRANCH WA-BR-REF[span_24](start_span)[span_24](end_span)
-                          WS-CURR[span_25](start_span)[span_25](end_span)
+004080     INITIALIZE WA-CO WB-CO P-IND WA-I WA-IND WA-SIGN[span_4](start_span)[span_4](end_span)[span_5](start_span)[span_5](end_span)
+004090                WA-S WA-W WW-B WA-FLAG[span_6](start_span)[span_6](end_span)[span_7](start_span)[span_7](end_span)
+004100                WA-PREV-ACT-NO[span_8](start_span)[span_8](end_span)[span_9](start_span)[span_9](end_span)
+004110                WA-TRAN-DATE1[span_10](start_span)[span_10](end_span)[span_11](start_span)[span_11](end_span)
+004120                WA-TEMP-BAL-Z WA-TEMP-BAL WA-TRAN-AMOUNT WB-SIGN[span_12](start_span)[span_12](end_span)[span_13](start_span)[span_13](end_span)
+004130                WB-IND WA-STMNT-NO[span_14](start_span)[span_14](end_span)[span_15](start_span)[span_15](end_span)
+004140                WA-WORKING-DATE WA-TODAY-BINARY-DATE[span_16](start_span)[span_16](end_span)[span_17](start_span)[span_17](end_span)
+004150                WA-CARD-DT-BINARY WA-EOF WS-EOF[span_18](start_span)[span_18](end_span)[span_19](start_span)[span_19](end_span)
+004160                WA-TEMP-DATE WA-TEMP1-DATE[span_20](start_span)[span_20](end_span)[span_21](start_span)[span_21](end_span)
+004260                WA-VAL-DATE[span_22](start_span)[span_22](end_span)[span_23](start_span)[span_23](end_span)
+004280                WA-TEMP1-BIN-DATE.[span_24](start_span)[span_24](end_span)[span_25](start_span)[span_25](end_span)
+TTTTTT     MOVE ZEROS TO WS-TALLY[span_26](start_span)[span_26](end_span)[span_27](start_span)[span_27](end_span)
+TTTTTT                   WA-TRAN-CODE[span_28](start_span)[span_28](end_span)[span_29](start_span)[span_29](end_span)
+004310                   EXIT-TRAN[span_30](start_span)[span_30](end_span)[span_31](start_span)[span_31](end_span)
+004320                   WA-DATE WA-BIT WA-JRNL[span_32](start_span)[span_32](end_span)[span_33](start_span)[span_33](end_span)
+004330                   WA-OPEN-BAL WS-BGL-BALANCE[span_34](start_span)[span_34](end_span)[span_35](start_span)[span_35](end_span)
+004340                   FLAG-62 WE-C WE-D WE-A WE-B[span_36](start_span)[span_36](end_span)[span_37](start_span)[span_37](end_span)
+004350                   WA-AMT1[span_38](start_span)[span_38](end_span)[span_39](start_span)[span_39](end_span)
+004360                   WA-BAL FLAG1 WA-OPEN-BAL-TEM[span_40](start_span)[span_40](end_span)[span_41](start_span)[span_41](end_span)
+004370                   WA-TEMP-AMNT WA-CLOS-AMNT1 WA-CLOS-AMNT.[span_42](start_span)[span_42](end_span)[span_43](start_span)[span_43](end_span)
+004400     MOVE SPACES TO DEAL-DT WG-NARR[span_44](start_span)[span_44](end_span)[span_45](start_span)[span_45](end_span)
+004420                    SQ-GLDM-KEY WS-GLDM-KEY[span_46](start_span)[span_46](end_span)[span_47](start_span)[span_47](end_span)
+004430                    WA-TRAN-NO WA-BIC-CODE WA-CORR-REF[span_48](start_span)[span_48](end_span)[span_49](start_span)[span_49](end_span)
+004440                    WA-REC0 WA-REC1 WA-REC2 WA-REC3[span_50](start_span)[span_50](end_span)[span_51](start_span)[span_51](end_span)
+004450                    WA-PART-BR-REF WA-PART-CORR-REF[span_52](start_span)[span_52](end_span)[span_53](start_span)[span_53](end_span)
+004460                    WA-MFX-SR-NO[span_54](start_span)[span_54](end_span)[span_55](start_span)[span_55](end_span)
+004470                    WC-SIGN WC-IND[span_56](start_span)[span_56](end_span)[span_57](start_span)[span_57](end_span)
+004480                    WA-DEAL-DATE[span_58](start_span)[span_58](end_span)[span_59](start_span)[span_59](end_span)
+004490                    WS-ACT-NO WA-SR-NO WA-BRANCH WA-BR-REF[span_60](start_span)[span_60](end_span)[span_61](start_span)[span_61](end_span)
+004500                    WS-CURR.[span_62](start_span)[span_62](end_span)[span_63](start_span)[span_63](end_span)
 
-           MOVE LNK-REQ-ACCT-NO  TO WS-ACT-NO
-           MOVE LNK-REQ-BRANCH   TO WA-BRANCH
-           MOVE LNK-REQ-DATE-BIN TO WA-DATE
+           MOVE MS-INP-ACCT-NO TO WS-ACT-NO[span_64](start_span)[span_64](end_span)[span_65](start_span)[span_65](end_span)
+           MOVE MS-INP-BRANCH  TO WA-BRANCH[span_66](start_span)[span_66](end_span)[span_67](start_span)[span_67](end_span)
 
-           PERFORM A250-JULIAN THRU A250-EXIT[span_26](start_span)[span_26](end_span)
-           PERFORM A010-FETCH-TARGET-ACCOUNT THRU A010-EXIT
-           IF SQLCODE NOT = ZEROS
-               MOVE 404 TO LNK-RESP-CODE
-               MOVE "ACCOUNT NOT FOUND OR INVALID FOR STATEMENT"
-                 TO LNK-RESP-MESSAGE
-               GOBACK
-           END-IF
+004560     PERFORM A150-GET-TODAY-DATE   THRU A150-EXIT.[span_68](start_span)[span_68](end_span)[span_69](start_span)[span_69](end_span)
 
-           PERFORM G100-GECT-DETAILS THRU G100-EXIT[span_27](start_span)[span_27](end_span)
+           IF MS-INP-DATE NOT NUMERIC OR MS-INP-DATE = ZEROES[span_70](start_span)[span_70](end_span)[span_71](start_span)[span_71](end_span)
+              MOVE WA-TODAY-BINARY-DATE TO WA-DATE[span_72](start_span)[span_72](end_span)[span_73](start_span)[span_73](end_span)
+           ELSE
+              MOVE MS-INP-DATE TO UT0030-DATE-DDMMCCYY[span_74](start_span)[span_74](end_span)[span_75](start_span)[span_75](end_span)
+              MOVE 1           TO UT0030-FUNCTION[span_76](start_span)[span_76](end_span)[span_77](start_span)[span_77](end_span)
+              CALL "UT0030" USING UT0030-FUNCTION[span_78](start_span)[span_78](end_span)[span_79](start_span)[span_79](end_span)
+                                  UT0030-DATE-AREA[span_80](start_span)[span_80](end_span)[span_81](start_span)[span_81](end_span)
+                                  UT0030-BINARY-DATE[span_82](start_span)[span_82](end_span)[span_83](start_span)[span_83](end_span)
+              MOVE UT0030-BINARY-DATE TO WA-DATE[span_84](start_span)[span_84](end_span)[span_85](start_span)[span_85](end_span)
+           END-IF.
 
-           EXEC SQL CLOSE GETDETL1 END-EXEC[span_28](start_span)[span_28](end_span)
-           EXEC SQL CLOSE GETDETL3 END-EXEC[span_29](start_span)[span_29](end_span)
-           EXEC SQL CLOSE GETDETL4 END-EXEC[span_30](start_span)[span_30](end_span)
+004880     PERFORM A250-JULIAN THRU A250-EXIT.[span_86](start_span)[span_86](end_span)[span_87](start_span)[span_87](end_span)
+           PERFORM A200-READ-SINGLE-ACCT THRU A200-EXIT.
+           PERFORM A600-CLOSE THRU A600-EXIT.[span_88](start_span)[span_88](end_span)[span_89](start_span)[span_89](end_span)
 
+ROHITH***************START OF 24080121*********************
+ROHITH     IF WA-TRACE-GET-FLAG = 'Y'
+ROHTIH        DISPLAY 'END OF SSR940S'
+ROHITH        RESET TRACE
+ROHITH     END-IF.
+ROHITH***************END   OF 24080121*********************
            GOBACK.
 
-       A010-FETCH-TARGET-ACCOUNT.
-           MOVE SPACES TO WA-BIC-CODE WS-FD-CODE WS-CURR
-           EXEC SQL
-               SELECT ACCT_NO,
-                      CURRENCY,
-                      FD_CODE,
-                      BIC_CODE
-               INTO  :WS-ACT-NO,
-                     :WS-CURR,
+005320  A250-JULIAN.
+005330       PERFORM A260-GET-DATE THRU A260-EXIT.[span_90](start_span)[span_90](end_span)[span_91](start_span)[span_91](end_span)
+005340       MOVE '01'           TO WA-TEMP1-DD.[span_92](start_span)[span_92](end_span)[span_93](start_span)[span_93](end_span)
+005350       MOVE '01'           TO WA-TEMP1-MM.[span_94](start_span)[span_94](end_span)[span_95](start_span)[span_95](end_span)
+005360       MOVE WA-TEMP-CCYY   TO WA-TEMP1-CCYY.[span_96](start_span)[span_96](end_span)[span_97](start_span)[span_97](end_span)
+005370       MOVE WA-TEMP1-DATE  TO UT0030-DATE-DDMMCCYY.[span_98](start_span)[span_98](end_span)[span_99](start_span)[span_99](end_span)
+005380       MOVE 1              TO UT0030-FUNCTION.[span_100](start_span)[span_100](end_span)[span_101](start_span)[span_101](end_span)
+005390
+005400       CALL "UT0030"      USING UT0030-FUNCTION[span_102](start_span)[span_102](end_span)[span_103](start_span)[span_103](end_span)
+005410                                UT0030-DATE-AREA[span_104](start_span)[span_104](end_span)[span_105](start_span)[span_105](end_span)
+005420                                UT0030-BINARY-DATE.[span_106](start_span)[span_106](end_span)[span_107](start_span)[span_107](end_span)
+005430       MOVE UT0030-BINARY-DATE TO WA-TEMP1-BIN-DATE.[span_108](start_span)[span_108](end_span)[span_109](start_span)[span_109](end_span)
+005440       COMPUTE WA-STMNT-NO  =[span_110](start_span)[span_110](end_span)[span_111](start_span)[span_111](end_span)
+005450                 WA-DATE - WA-TEMP1-BIN-DATE.[span_112](start_span)[span_112](end_span)[span_113](start_span)[span_113](end_span)
+005460  A250-EXIT.
+005470      EXIT.
+
+005490  A260-GET-DATE.
+005500     MOVE WA-DATE TO UT0020-BINARY-DATE.[span_114](start_span)[span_114](end_span)[span_115](start_span)[span_115](end_span)
+005510     MOVE 1 TO UT0020-FUNCTION.[span_116](start_span)[span_116](end_span)[span_117](start_span)[span_117](end_span)
+005520     CALL "UT0020" USING  UT0020-FUNCTION[span_118](start_span)[span_118](end_span)[span_119](start_span)[span_119](end_span)
+005530                          UT0020-DATE-AREA[span_120](start_span)[span_120](end_span)[span_121](start_span)[span_121](end_span)
+005540                          UT0020-BINARY-DATE.[span_122](start_span)[span_122](end_span)[span_123](start_span)[span_123](end_span)
+005550
+005560     MOVE UT0020-DATE-DD     TO WA-TEMP-DD.[span_124](start_span)[span_124](end_span)[span_125](start_span)[span_125](end_span)
+005570     MOVE UT0020-DATE-MM     TO WA-TEMP-MM.[span_126](start_span)[span_126](end_span)[span_127](start_span)[span_127](end_span)
+005580     MOVE UT0020-DATE-CCYY   TO WA-TEMP-CCYY.[span_128](start_span)[span_128](end_span)[span_129](start_span)[span_129](end_span)
+005590  A260-EXIT.
+005600     EXIT.
+
+        A200-READ-SINGLE-ACCT.
+           MOVE SPACES TO WA-BIC-CODE WS-FD-CODE WS-CURR.[span_130](start_span)[span_130](end_span)[span_131](start_span)[span_131](end_span)
+           EXEC SQL 
+               SELECT 
+                     CURRENCY,
+                     FD_CODE,
+                     BIC_CODE
+               INTO  :WS-CURR,
                      :WS-FD-CODE,
                      :WA-BIC-CODE
-               FROM   FXAT
-               WHERE  INST_NO = '003'
-                 AND  BRANCH  = :WA-BRANCH
-                 AND  ACCT_NO = :WS-ACT-NO
-                 AND  ID_CODE = 'NM[span_31](start_span)'[span_31](end_span)
+               FROM  FXAT
+               WHERE INST_NO = '003' 
+                 AND BRANCH  = :WA-BRANCH
+                 AND ACCT_NO = :WS-ACT-NO
+                 AND ID_CODE = 'NM[span_132](start_span)[span_133](start_span)'[span_132](end_span)[span_133](end_span)
            END-EXEC.
-       A010-EXIT.
+
+           IF SQLCODE NOT = ZEROS
+              MOVE "01"    TO MS-OUT-STATUS[span_134](start_span)[span_134](end_span)[span_135](start_span)[span_135](end_span)
+              MOVE SQLCODE TO MS-OUT-SQLCODE[span_136](start_span)[span_136](end_span)[span_137](start_span)[span_137](end_span)
+              GO TO A200-EXIT[span_138](start_span)[span_138](end_span)[span_139](start_span)[span_139](end_span)
+           END-IF.
+
+           MOVE ZEROS TO EXIT-TRAN.[span_140](start_span)[span_140](end_span)[span_141](start_span)[span_141](end_span)
+           MOVE ZEROS TO WA-TEMP-AMNT.[span_142](start_span)[span_142](end_span)[span_143](start_span)[span_143](end_span)
+           PERFORM G100-GECT-DETAILS THRU G100-EXIT.[span_144](start_span)[span_144](end_span)[span_145](start_span)[span_145](end_span)
+        A200-EXIT.
            EXIT.
 
-       G100-GECT-DETAILS.
-           PERFORM D400-FORMAT-SWIFT THRU D400-EXIT[span_32](start_span)[span_32](end_span)
-           MOVE WS-ACT-NO TO WA-PREV-ACT-NO[span_33](start_span)[span_33](end_span)
-           MOVE WA-DATE TO UT0020-BINARY-DATE[span_34](start_span)[span_34](end_span)
-           PERFORM Y010-UT0020-PARA THRU Y010-EXIT[span_35](start_span)[span_35](end_span)
-           MOVE UT0020-DATE-DDMMCCYY TO WA-TRAN-DATE1[span_36](start_span)[span_36](end_span)
-           MOVE "N" TO WS-EOF[span_37](start_span)[span_37](end_span)
-           PERFORM T200-GET-GECT-AMT THRU T200-EXIT[span_38](start_span)[span_38](end_span)
-           PERFORM T300-FETCH-GECT-AMT THRU T300-EXIT[span_39](start_span)[span_39](end_span)
-                   UNTIL WS-EOF = 'Y'.[span_40](start_span)[span_40](end_span)
-       G100-EXIT.
-           EXIT.
+A75082  G100-GECT-DETAILS.
+A75082          PERFORM D400-FORMAT-SWIFT THRU D400-EXIT.[span_146](start_span)[span_146](end_span)[span_147](start_span)[span_147](end_span)
+A75082          MOVE WS-ACT-NO TO WA-PREV-ACT-NO.[span_148](start_span)[span_148](end_span)[span_149](start_span)[span_149](end_span)
+A75082          MOVE WA-DATE TO UT0020-BINARY-DATE.[span_150](start_span)[span_150](end_span)[span_151](start_span)[span_151](end_span)
+A75082          PERFORM Y010-UT0020-PARA  THRU  Y010-EXIT.[span_152](start_span)[span_152](end_span)[span_153](start_span)[span_153](end_span)
+A75082          MOVE UT0020-DATE-DDMMCCYY TO WA-TRAN-DATE1.[span_154](start_span)[span_154](end_span)[span_155](start_span)[span_155](end_span)
+A75082          MOVE "N" TO WS-EOF.[span_156](start_span)[span_156](end_span)[span_157](start_span)[span_157](end_span)
+A75082          PERFORM T200-GET-GECT-AMT THRU T200-EXIT.[span_158](start_span)[span_158](end_span)[span_159](start_span)[span_159](end_span)
+A75082          PERFORM T300-FETCH-GECT-AMT THRU T300-EXIT[span_160](start_span)[span_160](end_span)[span_161](start_span)[span_161](end_span)
+A75082                  UNTIL WS-EOF = 'Y'.[span_162](start_span)[span_162](end_span)[span_163](start_span)[span_163](end_span)
+A75082  G100-EXIT.
+A75082      EXIT.
 
-       D400-FORMAT-SWIFT.
-           MOVE 1 TO WA-INDEX.[span_41](start_span)[span_41](end_span)
-       LOOP-1.
-           IF WA-INDEX < 13[span_42](start_span)[span_42](end_span)
-              IF WA-BIC-CODE(WA-INDEX:1) = SPACES[span_43](start_span)[span_43](end_span)
-                 MOVE "X" TO WA-BIC-CODE(WA-INDEX:1)[span_44](start_span)[span_44](end_span)
-                 ADD 1 TO WA-INDEX[span_45](start_span)[span_45](end_span)
-                 GO TO LOOP-1[span_46](start_span)[span_46](end_span)
-              ELSE
-                 ADD 1 TO WA-INDEX[span_47](start_span)[span_47](end_span)
-                 GO TO LOOP-1[span_48](start_span)[span_48](end_span)
-              END-IF
-           END-IF.[span_49](start_span)[span_49](end_span)
-       D400-EXIT.
-           EXIT.
+007370 D400-FORMAT-SWIFT.
+007380     MOVE  1 TO WA-INDEX.[span_164](start_span)[span_164](end_span)[span_165](start_span)[span_165](end_span)
+007390 LOOP-1.
+007400     IF WA-INDEX < 13[span_166](start_span)[span_166](end_span)[span_167](start_span)[span_167](end_span)
+007410        IF WA-BIC-CODE(WA-INDEX:1) = SPACES[span_168](start_span)[span_168](end_span)[span_169](start_span)[span_169](end_span)
+007420           MOVE "X" TO WA-BIC-CODE(WA-INDEX:1)[span_170](start_span)[span_170](end_span)[span_171](start_span)[span_171](end_span)
+007430           ADD 1 TO WA-INDEX[span_172](start_span)[span_172](end_span)[span_173](start_span)[span_173](end_span)
+007440           GO TO LOOP-1[span_174](start_span)[span_174](end_span)[span_175](start_span)[span_175](end_span)
+007450        ELSE
+007460           ADD 1 TO WA-INDEX[span_176](start_span)[span_176](end_span)[span_177](start_span)[span_177](end_span)
+007470           GO TO LOOP-1[span_178](start_span)[span_178](end_span)[span_179](start_span)[span_179](end_span)
+007480        END-IF
+007490     END-IF.[span_180](start_span)[span_180](end_span)[span_181](start_span)[span_181](end_span)
+007510 D400-EXIT.
+007520     EXIT.
 
-       A250-JULIAN.
-           PERFORM A260-GET-DATE THRU A260-EXIT[span_50](start_span)[span_50](end_span)
-           MOVE '01'          TO UT0030-DATE-DD[span_51](start_span)[span_51](end_span)
-           MOVE '01'          TO UT0030-DATE-MM[span_52](start_span)[span_52](end_span)
-           MOVE WA-TRAN-CC    TO UT0030-DATE-CC[span_53](start_span)[span_53](end_span)
-           MOVE WA-TRAN-YY    TO UT0030-DATE-YY[span_54](start_span)[span_54](end_span)
-           MOVE 1             TO UT0030-FUNCTION[span_55](start_span)[span_55](end_span)
-           CALL "UT0030" USING UT0030-FUNCTION[span_56](start_span)[span_56](end_span)
-                               UT0030-DATE-AREA[span_57](start_span)[span_57](end_span)
-                               UT0030-BINARY-DATE[span_58](start_span)[span_58](end_span)
-           COMPUTE WA-STMNT-NO = WA-DATE - UT0030-BINARY-DATE.[span_59](start_span)[span_59](end_span)
-       A250-EXIT.
-           EXIT.
+007540  A150-GET-TODAY-DATE.
+007550       CALL "UT1999" USING UT1999CA-CALL-AREA.[span_182](start_span)[span_182](end_span)[span_183](start_span)[span_183](end_span)
+007570       MOVE UT1999CA-DD    TO UT0030-DATE-DD[span_184](start_span)[span_184](end_span)[span_185](start_span)[span_185](end_span)
+007580                              WA-WORKING-DD.[span_186](start_span)[span_186](end_span)[span_187](start_span)[span_187](end_span)
+007590       MOVE UT1999CA-MM    TO UT0030-DATE-MM[span_188](start_span)[span_188](end_span)[span_189](start_span)[span_189](end_span)
+007600                              WA-WORKING-MM.[span_190](start_span)[span_190](end_span)[span_191](start_span)[span_191](end_span)
+007610       MOVE UT1999CA-CC    TO UT0030-DATE-CC[span_192](start_span)[span_192](end_span)[span_193](start_span)[span_193](end_span)
+007620                              WA-WORKING-CC.[span_194](start_span)[span_194](end_span)[span_195](start_span)[span_195](end_span)
+007630       MOVE UT1999CA-YY    TO UT0030-DATE-YY[span_196](start_span)[span_196](end_span)[span_197](start_span)[span_197](end_span)
+007640                              WA-WORKING-YY.[span_198](start_span)[span_198](end_span)[span_199](start_span)[span_199](end_span)
+007650       MOVE 1              TO UT0030-FUNCTION.[span_200](start_span)[span_200](end_span)[span_201](start_span)[span_201](end_span)
+007660       CALL "UT0030" USING UT0030-FUNCTION[span_202](start_span)[span_202](end_span)[span_203](start_span)[span_203](end_span)
+007670                           UT0030-DATE-AREA[span_204](start_span)[span_204](end_span)[span_205](start_span)[span_205](end_span)
+007680                           UT0030-BINARY-DATE.[span_206](start_span)[span_206](end_span)[span_207](start_span)[span_207](end_span)
+007700       MOVE UT0030-BINARY-DATE TO WA-TODAY-BINARY-DATE.[span_208](start_span)[span_208](end_span)[span_209](start_span)[span_209](end_span)
+007720  A150-EXIT.
+007730      EXIT.
 
-       A260-GET-DATE.
-           MOVE WA-DATE TO UT0020-BINARY-DATE[span_60](start_span)[span_60](end_span)
-           MOVE 1 TO UT0020-FUNCTION[span_61](start_span)[span_61](end_span)
-           CALL "UT0020" USING UT0020-FUNCTION[span_62](start_span)[span_62](end_span)
-                               UT0020-DATE-AREA[span_63](start_span)[span_63](end_span)
-                               UT0020-BINARY-DATE[span_64](start_span)[span_64](end_span)
-           MOVE UT0020-DATE-DD   TO WA-TRAN-DD[span_65](start_span)[span_65](end_span)
-           MOVE UT0020-DATE-MM   TO WA-TRAN-MM[span_66](start_span)[span_66](end_span)
-           MOVE UT0020-DATE-CC   TO WA-TRAN-CC[span_67](start_span)[span_67](end_span)
-           MOVE UT0020-DATE-YY   TO WA-TRAN-YY.[span_68](start_span)[span_68](end_span)
-       A260-EXIT.
-           EXIT.
+008000 S200-GET-GECT.
+008010       MOVE "N" TO WA-EOF.[span_210](start_span)[span_210](end_span)[span_211](start_span)[span_211](end_span)
+008020       EXEC SQL DECLARE GETDETL1 CURSOR FOR[span_212](start_span)[span_212](end_span)[span_213](start_span)[span_213](end_span)
+008030       SELECT /*+ INDEX(GECT GECTUK_04) */[span_214](start_span)[span_214](end_span)[span_215](start_span)[span_215](end_span)
+008040              SUBSTR(var_area,13,9) "MFX REF NO",[span_216](start_span)[span_216](end_span)[span_217](start_span)[span_217](end_span)
+008050              SUBSTR(VAR_AREA,22,8) "DEAL DATE",[span_218](start_span)[span_218](end_span)[span_219](start_span)[span_219](end_span)
+008060              SUBSTR(VAR_AREA,30,5) "BRANCH",[span_220](start_span)[span_220](end_span)[span_221](start_span)[span_221](end_span)
+008090              SUBSTR(var_area,35,16) "BRANCH REFRENCE",[span_222](start_span)[span_222](end_span)[span_223](start_span)[span_223](end_span)
+008100              SUBSTR(var_area,56,8) "VALUE DATE[span_224](start_span)[span_225](start_span)"[span_224](end_span)[span_225](end_span)
+008120       FROM   GECT[span_226](start_span)[span_226](end_span)[span_227](start_span)[span_227](end_span)
+008140       WHERE  (INST_NO   = '003'      AND[span_228](start_span)[span_228](end_span)[span_229](start_span)[span_229](end_span)
+008160               ACCT_NO   = :WS-ACT-NO AND[span_230](start_span)[span_230](end_span)[span_231](start_span)[span_231](end_span)
+008170               TRAN_TYPE = '85'       AND[span_232](start_span)[span_232](end_span)[span_233](start_span)[span_233](end_span)
+008180               TRAN_DATE = :WA-DATE   AND[span_234](start_span)[span_234](end_span)[span_235](start_span)[span_235](end_span)
+008190               JRNL_NO   = :WA-JRNL)[span_236](start_span)[span_236](end_span)[span_237](start_span)[span_237](end_span)
+008210       END-EXEC.[span_238](start_span)[span_238](end_span)[span_239](start_span)[span_239](end_span)
+008220       EXEC SQL OPEN GETDETL1 END-EXEC.[span_240](start_span)[span_240](end_span)[span_241](start_span)[span_241](end_span)
+008250  S200-EXIT.
+008260      EXIT.
 
-       T200-GET-GECT-AMT.
-           EXEC SQL DECLARE GETDETL3 CURSOR FOR[span_69](start_span)[span_69](end_span)
-                SELECT /*+ INDEX(GECT GECTUK_04) */[span_70](start_span)[span_70](end_span)
-                       baseconv.convdata (var_area, 31,8,3) "AMOUNT",[span_71](start_span)[span_71](end_span)
-                       baseconv.convdata (var_area, 73,8,3) "BALANCE",[span_72](start_span)[span_72](end_span)
-                       substr(var_area,41,1) "CORRELATION BIT",[span_73](start_span)[span_73](end_span)
-                       baseconv.convdata (var_area, 19,4) "TRANCODE",[span_74](start_span)[span_74](end_span)
-                       JRNL_NO[span_75](start_span)[span_75](end_span)
-                FROM GECT[span_76](start_span)[span_76](end_span)
-                WHERE (INST_NO = '003'      AND[span_77](start_span)[span_77](end_span)
-                       ACCT_NO = :WS-ACT-NO AND[span_78](start_span)[span_78](end_span)
-                       TRAN_TYPE = '01'     AND[span_79](start_span)[span_79](end_span)
-                       TRAN_DATE = :WA-DATE)[span_80](start_span)[span_80](end_span)
-                ORDER BY REC_NO DESC[span_81](start_span)[span_81](end_span)
-           END-EXEC[span_82](start_span)[span_82](end_span)
-           EXEC SQL OPEN GETDETL3 END-EXEC.[span_83](start_span)[span_83](end_span)
-       T200-EXIT.
-           EXIT.
+008280  S300-FETCH-GECT.
+008290       MOVE SPACES TO WA-SR-NO[span_242](start_span)[span_242](end_span)[span_243](start_span)[span_243](end_span)
+008300                      WA-DEAL-DATE[span_244](start_span)[span_244](end_span)[span_245](start_span)[span_245](end_span)
+008310                      WA-BRANCH[span_246](start_span)[span_246](end_span)[span_247](start_span)[span_247](end_span)
+008320                      WA-BR-REF[span_248](start_span)[span_248](end_span)[span_249](start_span)[span_249](end_span)
+008340                      WA-VAL-DATE.[span_250](start_span)[span_250](end_span)[span_251](start_span)[span_251](end_span)
+008360       EXEC SQL FETCH GETDETL1[span_252](start_span)[span_252](end_span)[span_253](start_span)[span_253](end_span)
+008370                INTO    :WA-SR-NO,[span_254](start_span)[span_254](end_span)[span_255](start_span)[span_255](end_span)
+008380                        :WA-DEAL-DATE,[span_256](start_span)[span_256](end_span)[span_257](start_span)[span_257](end_span)
+008390                        :WA-BRANCH,[span_258](start_span)[span_258](end_span)[span_259](start_span)[span_259](end_span)
+008420                        :WA-BR-REF,[span_260](start_span)[span_260](end_span)[span_261](start_span)[span_261](end_span)
+008430                        :WA-VAL-DATE[span_262](start_span)[span_262](end_span)[span_263](start_span)[span_263](end_span)
+008450       END-EXEC.[span_264](start_span)[span_264](end_span)[span_265](start_span)[span_265](end_span)
+008460       IF SQLCODE = 1403 OR LESS THAN ZEROS[span_266](start_span)[span_266](end_span)[span_267](start_span)[span_267](end_span)
+008470          GO TO S300-EXIT[span_268](start_span)[span_268](end_span)[span_269](start_span)[span_269](end_span)
+008480       END-IF.[span_270](start_span)[span_270](end_span)[span_271](start_span)[span_271](end_span)
+008500       IF SQLCODE = ZEROS[span_272](start_span)[span_272](end_span)[span_273](start_span)[span_273](end_span)
+008510          MOVE WA-DATE TO UT0020-BINARY-DATE[span_274](start_span)[span_274](end_span)[span_275](start_span)[span_275](end_span)
+008520          PERFORM Y010-UT0020-PARA  THRU  Y010-EXIT[span_276](start_span)[span_276](end_span)[span_277](start_span)[span_277](end_span)
+008530          MOVE UT0020-DATE-DDMMCCYY TO WA-TRAN-DATE1[span_278](start_span)[span_278](end_span)[span_279](start_span)[span_279](end_span)
+008550          MOVE WA-DEAL-DATE TO UT0030-DATE-DDMMCCYY[span_280](start_span)[span_280](end_span)[span_281](start_span)[span_281](end_span)
+008560          MOVE 1 TO UT0030-FUNCTION[span_282](start_span)[span_282](end_span)[span_283](start_span)[span_283](end_span)
+008570          CALL "UT0030" USING UT0030-FUNCTION[span_284](start_span)[span_284](end_span)[span_285](start_span)[span_285](end_span)
+008580                              UT0030-DATE-AREA[span_286](start_span)[span_286](end_span)[span_287](start_span)[span_287](end_span)
+008590                              UT0030-BINARY-DATE[span_288](start_span)[span_288](end_span)[span_289](start_span)[span_289](end_span)
+008600          MOVE UT0030-BINARY-DATE TO DEAL-DT[span_290](start_span)[span_290](end_span)[span_291](start_span)[span_291](end_span)
+008610       END-IF.[span_292](start_span)[span_292](end_span)[span_293](start_span)[span_293](end_span)
+008630  S300-EXIT.
+008640      EXIT.
 
-       T300-FETCH-GECT-AMT.
-           MOVE ZEROS TO WA-OPEN-BAL WA-BAL WA-AMT1[span_84](start_span)[span_84](end_span)
-                         WA-BIT WA-TRAN-CODE[span_85](start_span)[span_85](end_span)
-           MOVE ZEROS TO WA-JRNL[span_86](start_span)[span_86](end_span)
-           EXEC SQL FETCH GETDETL3[span_87](start_span)[span_87](end_span)
-                INTO    :WA-AMT1,[span_88](start_span)[span_88](end_span)
-                        :WA-BAL,[span_89](start_span)[span_89](end_span)
-                        :WA-BIT,[span_90](start_span)[span_90](end_span)
-                        :WA-TRAN-CODE,[span_91](start_span)[span_91](end_span)
-                        :WA-JRNL[span_92](start_span)[span_92](end_span)
-           END-EXEC[span_93](start_span)[span_93](end_span)
-           IF ( SQLCODE IN SQLCA = 1403 OR LESS THAN ZEROS )[span_94](start_span)[span_94](end_span)
-              PERFORM A101-GENERATE-TAIL THRU A101-EXIT[span_95](start_span)[span_95](end_span)
-              GO TO T300-EXIT[span_96](start_span)[span_96](end_span)
-           END-IF[span_97](start_span)[span_97](end_span)
-           IF WA-BIT = 1[span_98](start_span)[span_98](end_span)
-              GO TO T300-EXIT[span_99](start_span)[span_99](end_span)
-           END-IF[span_100](start_span)[span_100](end_span)
+008660  T200-GET-GECT-AMT.
+008670       EXEC SQL DECLARE GETDETL3 CURSOR FOR[span_294](start_span)[span_294](end_span)[span_295](start_span)[span_295](end_span)
+008680            SELECT /*+ INDEX(GECT GECTUK_04) */[span_296](start_span)[span_296](end_span)[span_297](start_span)[span_297](end_span)
+008690                   baseconv.convdata (var_area, 31,8,3) "AMOUNT",[span_298](start_span)[span_298](end_span)[span_299](start_span)[span_299](end_span)
+008700                   baseconv.convdata (var_area, 73,8,3) "BALANCE",[span_300](start_span)[span_300](end_span)[span_301](start_span)[span_301](end_span)
+008710                   substr(var_area,41,1) "CORRELATION BIT",[span_302](start_span)[span_302](end_span)[span_303](start_span)[span_303](end_span)
+008720                   baseconv.convdata (var_area, 19,4) "TRANCODE",[span_304](start_span)[span_304](end_span)[span_305](start_span)[span_305](end_span)
+008730                   JRNL_NO[span_306](start_span)[span_306](end_span)[span_307](start_span)[span_307](end_span)
+008740            FROM GECT[span_308](start_span)[span_308](end_span)[span_309](start_span)[span_309](end_span)
+008750            WHERE (INST_NO = '003'      AND[span_310](start_span)[span_310](end_span)[span_311](start_span)[span_311](end_span)
+008760                   ACCT_NO = :WS-ACT-NO AND[span_312](start_span)[span_312](end_span)[span_313](start_span)[span_313](end_span)
+008770                   TRAN_TYPE = '01'     AND[span_314](start_span)[span_314](end_span)[span_315](start_span)[span_315](end_span)
+008780                   TRAN_DATE = :WA-DATE)[span_316](start_span)[span_316](end_span)[span_317](start_span)[span_317](end_span)
+008790            ORDER BY REC_NO DESC[span_318](start_span)[span_318](end_span)[span_319](start_span)[span_319](end_span)
+008800       END-EXEC.[span_320](start_span)[span_320](end_span)[span_321](start_span)[span_321](end_span)
+008810       EXEC SQL OPEN GETDETL3 END-EXEC.[span_322](start_span)[span_322](end_span)[span_323](start_span)[span_323](end_span)
+008830  T200-EXIT.     
+008840      EXIT.
 
-           MOVE WA-TRAN-CODE TO LINK-IN-TXCODE[span_101](start_span)[span_101](end_span)
-           PERFORM Y200-SET-UP-EDIT-MASK THRU Y200-EXIT[span_102](start_span)[span_102](end_span)
-           MOVE LINK-EDIT-TABLE TO STRT-AREA-EDIT-MASK[span_103](start_span)[span_103](end_span)
-           MOVE LINK-POSTING-LEVEL TO STRT-AREA-POSTING-LEVEL[span_104](start_span)[span_104](end_span)
-           MOVE STRT-AREA-PROCESS-BITS TO FIELD-B[span_105](start_span)[span_105](end_span)
-           CALL "UT0022" USING PUAREA[span_106](start_span)[span_106](end_span)
+008860  T300-FETCH-GECT-AMT.
+008870   MOVE ZEROS TO WA-OPEN-BAL WA-BAL WA-AMT1[span_324](start_span)[span_324](end_span)[span_325](start_span)[span_325](end_span)
+008880                 WA-BIT WA-TRAN-CODE.[span_326](start_span)[span_326](end_span)[span_327](start_span)[span_327](end_span)
+008890   MOVE ZEROS TO WA-JRNL.[span_328](start_span)[span_328](end_span)[span_329](start_span)[span_329](end_span)
+008900       EXEC SQL FETCH GETDETL3[span_330](start_span)[span_330](end_span)[span_331](start_span)[span_331](end_span)
+008910            INTO    :WA-AMT1,[span_332](start_span)[span_332](end_span)[span_333](start_span)[span_333](end_span)
+008920                    :WA-BAL,[span_334](start_span)[span_334](end_span)[span_335](start_span)[span_335](end_span)
+008930                    :WA-BIT,[span_336](start_span)[span_336](end_span)[span_337](start_span)[span_337](end_span)
+008940                    :WA-TRAN-CODE,[span_338](start_span)[span_338](end_span)[span_339](start_span)[span_339](end_span)
+008950                    :WA-JRNL[span_340](start_span)[span_340](end_span)[span_341](start_span)[span_341](end_span)
+008960       END-EXEC.[span_342](start_span)[span_342](end_span)[span_343](start_span)[span_343](end_span)
+008980   IF ( SQLCODE IN SQLCA = 1403 OR LESS THAN ZEROS )[span_344](start_span)[span_344](end_span)[span_345](start_span)[span_345](end_span)
+008990      PERFORM A101-GENERATE-TAIL THRU A101-EXIT[span_346](start_span)[span_346](end_span)[span_347](start_span)[span_347](end_span)
+009000      GO TO T300-EXIT[span_348](start_span)[span_348](end_span)[span_349](start_span)[span_349](end_span)
+009010   END-IF.[span_350](start_span)[span_350](end_span)[span_351](start_span)[span_351](end_span)
+009020   IF WA-BIT = 1[span_352](start_span)[span_352](end_span)[span_353](start_span)[span_353](end_span)
+009030      GO TO T300-EXIT[span_354](start_span)[span_354](end_span)[span_355](start_span)[span_355](end_span)
+009040   END-IF.[span_356](start_span)[span_356](end_span)[span_357](start_span)[span_357](end_span)
 
-           IF WA-INPUT-PARAM-TABLE(7) = 1[span_107](start_span)[span_107](end_span)
-              GO TO T300-EXIT[span_108](start_span)[span_108](end_span)
-           END-IF[span_109](start_span)[span_109](end_span)
+009060  MOVE WA-TRAN-CODE TO LINK-IN-TXCODE.[span_358](start_span)[span_358](end_span)[span_359](start_span)[span_359](end_span)
+009070  PERFORM Y200-SET-UP-EDIT-MASK THRU Y200-EXIT.[span_360](start_span)[span_360](end_span)[span_361](start_span)[span_361](end_span)
+009080  MOVE LINK-EDIT-TABLE TO STRT-AREA-EDIT-MASK.[span_362](start_span)[span_362](end_span)[span_363](start_span)[span_363](end_span)
+009090  MOVE LINK-POSTING-LEVEL TO STRT-AREA-POSTING-LEVEL.[span_364](start_span)[span_364](end_span)[span_365](start_span)[span_365](end_span)
+009100  MOVE STRT-AREA-PROCESS-BITS  TO FIELD-B.[span_366](start_span)[span_366](end_span)[span_367](start_span)[span_367](end_span)
+009110  CALL "UT0022"   USING PUAREA.[span_368](start_span)[span_368](end_span)[span_369](start_span)[span_369](end_span)
 
-           IF SQLCODE = ZEROS[span_110](start_span)[span_110](end_span)
-              MOVE 'F' TO WA-FLAG[span_111](start_span)[span_111](end_span)
-              COMPUTE WA-OPEN-BAL = WA-BAL - WA-AMT1[span_112](start_span)[span_112](end_span)
-              PERFORM S200-GET-GECT THRU S200-EXIT[span_113](start_span)[span_113](end_span)
-              PERFORM DO-PERFORM-TILL THRU DO-PERFORM-EXIT[span_114](start_span)[span_114](end_span)
-           END-IF.[span_115](start_span)[span_115](end_span)
-       T300-EXIT.
-           EXIT.
+009130  IF WA-INPUT-PARAM-TABLE(7) = 1[span_370](start_span)[span_370](end_span)[span_371](start_span)[span_371](end_span)
+009140     GO TO T300-EXIT[span_372](start_span)[span_372](end_span)[span_373](start_span)[span_373](end_span)
+009150  END-IF.[span_374](start_span)[span_374](end_span)[span_375](start_span)[span_375](end_span)
 
-       S200-GET-GECT.
-           MOVE "N" TO WS-EOF[span_116](start_span)[span_116](end_span)
-           EXEC SQL DECLARE GETDETL1 CURSOR FOR[span_117](start_span)[span_117](end_span)
-           SELECT /*+ INDEX(GECT GECTUK_04) */[span_118](start_span)[span_118](end_span)
-                  SUBSTR(var_area,13,9) "MFX REF NO",[span_119](start_span)[span_119](end_span)
-                  SUBSTR(VAR_AREA,22,8) "DEAL DATE",[span_120](start_span)[span_120](end_span)
-                  SUBSTR(VAR_AREA,30,5) "BRANCH",[span_121](start_span)[span_121](end_span)
-                  SUBSTR(var_area,35,16) "BRANCH REFRENCE",[span_122](start_span)[span_122](end_span)
-                  SUBSTR(var_area,56,8) "VALUE DATE[span_123](start_span)"[span_123](end_span)
-           FROM   GECT[span_124](start_span)[span_124](end_span)
-           WHERE (INST_NO   = '003'      AND[span_125](start_span)[span_125](end_span)
-                  ACCT_NO   = :WS-ACT-NO AND[span_126](start_span)[span_126](end_span)
-                  TRAN_TYPE = '85'       AND[span_127](start_span)[span_127](end_span)
-                  TRAN_DATE = :WA-DATE   AND[span_128](start_span)[span_128](end_span)
-                  JRNL_NO   = :WA-JRNL)[span_129](start_span)[span_129](end_span)
-           END-EXEC[span_130](start_span)[span_130](end_span)
-           EXEC SQL OPEN GETDETL1 END-EXEC.[span_131](start_span)[span_131](end_span)
-       S200-EXIT.
-           EXIT.
+009170  IF SQLCODE = ZEROS[span_376](start_span)[span_376](end_span)[span_377](start_span)[span_377](end_span)
+009180     MOVE 'F' TO WA-FLAG[span_378](start_span)[span_378](end_span)[span_379](start_span)[span_379](end_span)
+009190     COMPUTE WA-OPEN-BAL = WA-BAL - WA-AMT1[span_380](start_span)[span_380](end_span)[span_381](start_span)[span_381](end_span)
+009200     PERFORM S200-GET-GECT THRU S200-EXIT[span_382](start_span)[span_382](end_span)[span_383](start_span)[span_383](end_span)
+009210     PERFORM DO-PERFORM-TILL THRU DO-PERFORM-EXIT[span_384](start_span)[span_384](end_span)[span_385](start_span)[span_385](end_span)
+009260  END-IF.[span_386](start_span)[span_386](end_span)[span_387](start_span)[span_387](end_span)
+009280  T300-EXIT.  
+009290      EXIT.
 
-       S300-FETCH-GECT.
-           MOVE SPACES TO WA-SR-NO[span_132](start_span)[span_132](end_span)
-                          WA-DEAL-DATE[span_133](start_span)[span_133](end_span)
-                          WA-BRANCH[span_134](start_span)[span_134](end_span)
-                          WA-BR-REF[span_135](start_span)[span_135](end_span)
-                          WA-VAL-DATE[span_136](start_span)[span_136](end_span)
-           EXEC SQL FETCH GETDETL1[span_137](start_span)[span_137](end_span)
-                    INTO  :WA-SR-NO,[span_138](start_span)[span_138](end_span)
-                          :WA-DEAL-DATE,[span_139](start_span)[span_139](end_span)
-                          :WA-BRANCH,[span_140](start_span)[span_140](end_span)
-                          :WA-BR-REF,[span_141](start_span)[span_141](end_span)
-                          :WA-VAL-DATE[span_142](start_span)[span_142](end_span)
-           END-EXEC[span_143](start_span)[span_143](end_span)
-           IF SQLCODE = 1403 OR LESS THAN ZEROS[span_144](start_span)[span_144](end_span)
-              GO TO S300-EXIT[span_145](start_span)[span_145](end_span)
-           END-IF[span_146](start_span)[span_146](end_span)
+009310 A101-GENERATE-TAIL.
+009320   IF ( WA-PREV-ACT-NO = 0 AND[span_388](start_span)[span_388](end_span)[span_389](start_span)[span_389](end_span)
+009330      FLAG-62 = 1 AND EXIT-TRAN = 0 )[span_390](start_span)[span_390](end_span)[span_391](start_span)[span_391](end_span)
+009340      PERFORM A405-GENERATE-62      THRU A405-EXIT[span_392](start_span)[span_392](end_span)[span_393](start_span)[span_393](end_span)
+009350      MOVE 0   TO  FLAG-62[span_394](start_span)[span_394](end_span)[span_395](start_span)[span_395](end_span)
+009360      MOVE 1   TO  EXIT-TRAN[span_396](start_span)[span_396](end_span)[span_397](start_span)[span_397](end_span)
+009370      MOVE "Y" TO WS-EOF[span_398](start_span)[span_398](end_span)[span_399](start_span)[span_399](end_span)
+009380   ELSE
+009390    IF EXIT-TRAN = 0[span_400](start_span)[span_400](end_span)[span_401](start_span)[span_401](end_span)
+009400       MOVE "Y" TO WS-EOF[span_402](start_span)[span_402](end_span)[span_403](start_span)[span_403](end_span)
+009410       PERFORM A000-PROCESS THRU A000-EXIT[span_404](start_span)[span_404](end_span)[span_405](start_span)[span_405](end_span)
+009420       MOVE 'F' TO WA-FLAG[span_406](start_span)[span_406](end_span)[span_407](start_span)[span_407](end_span)
+009430       MOVE 1   TO FLAG1[span_408](start_span)[span_408](end_span)[span_409](start_span)[span_409](end_span)
+009440       PERFORM DO-PERFORM-FIELDS THRU DO-PERFORM-FIELDS-EXIT[span_410](start_span)[span_410](end_span)[span_411](start_span)[span_411](end_span)
+009450       PERFORM A405-GENERATE-62      THRU A405-EXIT[span_412](start_span)[span_412](end_span)[span_413](start_span)[span_413](end_span)
+009460       MOVE 1   TO  EXIT-TRAN[span_414](start_span)[span_414](end_span)[span_415](start_span)[span_415](end_span)
+009470    END-IF
+009480   END-IF.
+009500 A101-EXIT.
+009510  EXIT.
 
-           IF SQLCODE = ZEROS[span_147](start_span)[span_147](end_span)
-              MOVE WA-DATE TO UT0020-BINARY-DATE[span_148](start_span)[span_148](end_span)
-              PERFORM Y010-UT0020-PARA THRU Y010-EXIT[span_149](start_span)[span_149](end_span)
-              MOVE UT0020-DATE-DDMMCCYY TO WA-TRAN-DATE1[span_150](start_span)[span_150](end_span)
-              MOVE WA-DEAL-DATE TO UT0030-DATE-DDMMCCYY[span_151](start_span)[span_151](end_span)
-              MOVE 1 TO UT0030-FUNCTION[span_152](start_span)[span_152](end_span)
-              CALL "UT0030" USING UT0030-FUNCTION[span_153](start_span)[span_153](end_span)
-                                  UT0030-DATE-AREA[span_154](start_span)[span_154](end_span)
-                                  UT0030-BINARY-DATE[span_155](start_span)[span_155](end_span)
-              MOVE UT0030-BINARY-DATE TO DEAL-DT[span_156](start_span)[span_156](end_span)
-           END-IF.[span_157](start_span)[span_157](end_span)
-       S300-EXIT.
-           EXIT.
+009530  DO-PERFORM-TILL.
+009540    PERFORM S300-FETCH-GECT THRU S300-EXIT.[span_416](start_span)[span_416](end_span)[span_417](start_span)[span_417](end_span)
+009550    PERFORM U200-GET-FXTX THRU U200-EXIT.[span_418](start_span)[span_418](end_span)[span_419](start_span)[span_419](end_span)
+009560    PERFORM U300-FETCH-FXTX THRU U300-EXIT.[span_420](start_span)[span_420](end_span)[span_421](start_span)[span_421](end_span)
+009570    IF WS-ACT-NO = WA-PREV-ACT-NO[span_422](start_span)[span_422](end_span)[span_423](start_span)[span_423](end_span)
+009580       MOVE  WA-OPEN-BAL TO  WA-OPEN-BAL-TEM[span_424](start_span)[span_424](end_span)[span_425](start_span)[span_425](end_span)
+009590       PERFORM DO-PERFORM-FIELDS THRU DO-PERFORM-FIELDS-EXIT[span_426](start_span)[span_426](end_span)[span_427](start_span)[span_427](end_span)
+009600       MOVE   0          TO WA-PREV-ACT-NO[span_428](start_span)[span_428](end_span)[span_429](start_span)[span_429](end_span)
+009610    END-IF.
+009620    IF WA-PREV-ACT-NO = 0[span_430](start_span)[span_430](end_span)[span_431](start_span)[span_431](end_span)
+009630       MOVE  1          TO FLAG-62[span_432](start_span)[span_432](end_span)[span_433](start_span)[span_433](end_span)
+009640      IF WA-AMT1 NOT = ZEROS[span_434](start_span)[span_434](end_span)[span_435](start_span)[span_435](end_span)
+009650       PERFORM A404-GENERATE-61     THRU A404-EXIT[span_436](start_span)[span_436](end_span)[span_437](start_span)[span_437](end_span)
+009660       PERFORM A406-GENERATE-86     THRU A406-EXIT[span_438](start_span)[span_438](end_span)[span_439](start_span)[span_439](end_span)
+009670      END-IF
+009680    END-IF.
+009700  DO-PERFORM-EXIT.
+009710          EXIT.
 
-       DO-PERFORM-TILL.
-           PERFORM S300-FETCH-GECT THRU S300-EXIT[span_158](start_span)[span_158](end_span)
-           PERFORM U200-GET-FXTX THRU U200-EXIT[span_159](start_span)[span_159](end_span)
-           PERFORM U300-FETCH-FXTX THRU U300-EXIT[span_160](start_span)[span_160](end_span)
-           IF WS-ACT-NO = WA-PREV-ACT-NO[span_161](start_span)[span_161](end_span)
-              MOVE WA-OPEN-BAL TO WA-OPEN-BAL-TEM[span_162](start_span)[span_162](end_span)
-              PERFORM DO-PERFORM-FIELDS THRU DO-PERFORM-FIELDS-EXIT[span_163](start_span)[span_163](end_span)
-              MOVE 0 TO WA-PREV-ACT-NO[span_164](start_span)[span_164](end_span)
-           END-IF[span_165](start_span)[span_165](end_span)
-           IF WA-PREV-ACT-NO = 0[span_166](start_span)[span_166](end_span)
-              MOVE 1 TO FLAG-62[span_167](start_span)[span_167](end_span)
-              IF WA-AMT1 NOT = ZEROS[span_168](start_span)[span_168](end_span)
-                 PERFORM A404-GENERATE-61 THRU A404-EXIT[span_169](start_span)[span_169](end_span)
-                 PERFORM A406-GENERATE-86 THRU A406-EXIT[span_170](start_span)[span_170](end_span)
-              END-IF[span_171](start_span)[span_171](end_span)
-           END-IF.[span_172](start_span)[span_172](end_span)
-       DO-PERFORM-EXIT.
-           EXIT.
+009730  DO-PERFORM-FIELDS.
+009740   PERFORM A501-DEC-CURSOR       THRU A501-EXIT.[span_440](start_span)[span_440](end_span)[span_441](start_span)[span_441](end_span)
+009750   PERFORM A502-FETCH-CURSOR     THRU A502-EXIT.[span_442](start_span)[span_442](end_span)[span_443](start_span)[span_443](end_span)
+009760   PERFORM A300-GENERATE-BIC     THRU A300-EXIT.[span_444](start_span)[span_444](end_span)[span_445](start_span)[span_445](end_span)
+009770   PERFORM A400-GENERATE-20      THRU A400-EXIT.[span_446](start_span)[span_446](end_span)[span_447](start_span)[span_447](end_span)
+009780   PERFORM A401-GENERATE-25      THRU A401-EXIT.[span_448](start_span)[span_448](end_span)[span_449](start_span)[span_449](end_span)
+009790   PERFORM A402-GENERATE-28C     THRU A402-EXIT.[span_450](start_span)[span_450](end_span)[span_451](start_span)[span_451](end_span)
+009800   PERFORM A403-GENERATE-60      THRU A403-EXIT.[span_452](start_span)[span_452](end_span)[span_453](start_span)[span_453](end_span)
+009810  DO-PERFORM-FIELDS-EXIT.
+009820     EXIT.
 
-       U200-GET-FXTX.
-           EXEC SQL DECLARE GETDETL4 CURSOR FOR[span_173](start_span)[span_173](end_span)
-                SELECT CORR_REF_NO[span_174](start_span)[span_174](end_span)
-                FROM   FXTX[span_175](start_span)[span_175](end_span)
-                WHERE (INST_NO       = '003'      AND[span_176](start_span)[span_176](end_span)
-                       MFX_DEAL_DATE = :DEAL-DT   AND[span_177](start_span)[span_177](end_span)
-                       MFX_REF_NO    = :WA-SR-NO)[span_178](start_span)[span_178](end_span)
-           END-EXEC[span_179](start_span)[span_179](end_span)
-           EXEC SQL OPEN GETDETL4 END-EXEC.[span_180](start_span)[span_180](end_span)
-       U200-EXIT.
-           EXIT.
+009840  U200-GET-FXTX.
+009850       EXEC SQL DECLARE GETDETL4 CURSOR FOR[span_454](start_span)[span_454](end_span)[span_455](start_span)[span_455](end_span)
+009860            SELECT CORR_REF_NO[span_456](start_span)[span_456](end_span)[span_457](start_span)[span_457](end_span)
+009880            FROM   FXTX[span_458](start_span)[span_458](end_span)[span_459](start_span)[span_459](end_span)
+009900            WHERE ( INST_NO       = '003' AND[span_460](start_span)[span_460](end_span)[span_461](start_span)[span_461](end_span)
+009920                    MFX_DEAL_DATE = :DEAL-DT AND[span_462](start_span)[span_462](end_span)[span_463](start_span)[span_463](end_span)
+009930                    MFX_REF_NO    = :WA-SR-NO )[span_464](start_span)[span_464](end_span)[span_465](start_span)[span_465](end_span)
+009940       END-EXEC.[span_466](start_span)[span_466](end_span)[span_467](start_span)[span_467](end_span)
+009950       EXEC SQL OPEN GETDETL4 END-EXEC.[span_468](start_span)[span_468](end_span)[span_469](start_span)[span_469](end_span)
+009970  U200-EXIT.
+009980      EXIT.
 
-       U300-FETCH-FXTX.
-           MOVE SPACES TO WA-CORR-REF[span_181](start_span)[span_181](end_span)
-           EXEC SQL FETCH GETDETL4 INTO :WA-CORR-REF END-EXEC[span_182](start_span)[span_182](end_span)
-           IF SQLCODE = 1403[span_183](start_span)[span_183](end_span)
-              MOVE ZEROS TO WA-CORR-REF[span_184](start_span)[span_184](end_span)
-              IF WA-SR-NO(1:2) = 'FD[span_185](start_span)'[span_185](end_span)
-                 PERFORM U310-GET-GECT THRU U310-EXIT[span_186](start_span)[span_186](end_span)
-                 PERFORM U320-FETCH-GECT THRU U320-EXIT[span_187](start_span)[span_187](end_span)
-                 GO TO U300-EXIT[span_188](start_span)[span_188](end_span)
-              END-IF[span_189](start_span)[span_189](end_span)
-           END-IF[span_190](start_span)[span_190](end_span)
-           IF SQLCODE = ZEROS[span_191](start_span)[span_191](end_span)
-              IF WA-CORR-REF = SPACES[span_192](start_span)[span_192](end_span)
-                 MOVE ZEROS TO WA-CORR-REF[span_193](start_span)[span_193](end_span)
-              END-IF[span_194](start_span)[span_194](end_span)
-           END-IF.[span_195](start_span)[span_195](end_span)
-       U300-EXIT.
-           EXIT.
+010000  U300-FETCH-FXTX.
+010010   MOVE SPACES TO WA-CORR-REF.[span_470](start_span)[span_470](end_span)[span_471](start_span)[span_471](end_span)
+010020       EXEC SQL FETCH GETDETL4[span_472](start_span)[span_472](end_span)[span_473](start_span)[span_473](end_span)
+010030            INTO :WA-CORR-REF[span_474](start_span)[span_474](end_span)[span_475](start_span)[span_475](end_span)
+010050       END-EXEC.[span_476](start_span)[span_476](end_span)[span_477](start_span)[span_477](end_span)
+010060   IF SQLCODE = 1403[span_478](start_span)[span_478](end_span)[span_479](start_span)[span_479](end_span)
+010070      MOVE ZEROS  TO WA-CORR-REF[span_480](start_span)[span_480](end_span)[span_481](start_span)[span_481](end_span)
+010080      IF WA-SR-NO(1:2) = 'FD[span_482](start_span)[span_483](start_span)'[span_482](end_span)[span_483](end_span)
+010090         PERFORM U310-GET-GECT THRU U310-EXIT[span_484](start_span)[span_484](end_span)[span_485](start_span)[span_485](end_span)
+010100         PERFORM U320-FETCH-GECT THRU U320-EXIT[span_486](start_span)[span_486](end_span)[span_487](start_span)[span_487](end_span)
+010110         GO TO U300-EXIT[span_488](start_span)[span_488](end_span)[span_489](start_span)[span_489](end_span)
+010120      END-IF   
+010130   END-IF.
+010150   IF SQLCODE = ZEROS[span_490](start_span)[span_490](end_span)[span_491](start_span)[span_491](end_span)
+010160     IF WA-CORR-REF = SPACES[span_492](start_span)[span_492](end_span)[span_493](start_span)[span_493](end_span)
+010170        MOVE ZEROS TO WA-CORR-REF[span_494](start_span)[span_494](end_span)[span_495](start_span)[span_495](end_span)
+010180     END-IF
+010190   END-IF.   
+010210  U300-EXIT.
+010220      EXIT.
 
-       U310-GET-GECT.
-           EXEC SQL DECLARE GETDETL7 CURSOR FOR[span_196](start_span)[span_196](end_span)
-           SELECT /*+ INDEX(GECT GECTUK_04) */[span_197](start_span)[span_197](end_span)
-                substr(var_area,33,30)[span_198](start_span)[span_198](end_span)
-           FROM GECT[span_199](start_span)[span_199](end_span)
-           WHERE (INST_NO   = '003'      AND[span_200](start_span)[span_200](end_span)
-                  ACCT_NO   = :WS-ACT-NO AND[span_201](start_span)[span_201](end_span)
-                  TRAN_TYPE = '20'       AND[span_202](start_span)[span_202](end_span)
-                  TRAN_DATE = :WA-DATE   AND[span_203](start_span)[span_203](end_span)
-                  JRNL_NO   = :WA-JRNL)[span_204](start_span)[span_204](end_span)
-           END-EXEC[span_205](start_span)[span_205](end_span)
-           EXEC SQL OPEN GETDETL7 END-EXEC.[span_206](start_span)[span_206](end_span)
-       U310-EXIT.
-           EXIT.
+010240  Y010-UT0020-PARA.
+010250       MOVE 1 TO UT0020-FUNCTION.[span_496](start_span)[span_496](end_span)[span_497](start_span)[span_497](end_span)
+010260       CALL "UT0020" USING UT0020-FUNCTION[span_498](start_span)[span_498](end_span)[span_499](start_span)[span_499](end_span)
+010270                           UT0020-DATE-AREA[span_500](start_span)[span_500](end_span)[span_501](start_span)[span_501](end_span)
+010280                           UT0020-BINARY-DATE.[span_502](start_span)[span_502](end_span)[span_503](start_span)[span_503](end_span)
+010300  Y010-EXIT.
+010310      EXIT.
+010320  
+010330  A600-CLOSE.
+010340       EXEC SQL CLOSE GETDETL1  END-EXEC.[span_504](start_span)[span_504](end_span)[span_505](start_span)[span_505](end_span)
+010350       EXEC SQL CLOSE GETDETL3  END-EXEC.[span_506](start_span)[span_506](end_span)[span_507](start_span)[span_507](end_span)
+010360       EXEC SQL CLOSE GETDETL4  END-EXEC.[span_508](start_span)[span_508](end_span)[span_509](start_span)[span_509](end_span)
+010390  A600-EXIT.
+010400      EXIT.
 
-       U320-FETCH-GECT.
-           EXEC SQL FETCH GETDETL7 INTO :WG-NARR END-EXEC[span_207](start_span)[span_207](end_span)
-           IF SQLCODE = 1403 OR LESS THAN ZEROS[span_208](start_span)[span_208](end_span)
-              MOVE SPACES TO WG-NARR[span_209](start_span)[span_209](end_span)
-           END-IF[span_210](start_span)[span_210](end_span)
-           IF SQLCODE = ZEROS[span_211](start_span)[span_211](end_span)
-              MOVE WG-NARR(1:16) TO WA-CORR-REF[span_212](start_span)[span_212](end_span)
-           END-IF.[span_213](start_span)[span_213](end_span)
-       U320-EXIT.
-           EXEC SQL CLOSE GETDETL7 END-EXEC[span_214](start_span)[span_214](end_span)
-           EXIT.
+010560  Y200-SET-UP-EDIT-MASK.
+010570     MOVE 02               TO LINK-IN-CALL-CODE.[span_510](start_span)[span_510](end_span)[span_511](start_span)[span_511](end_span)
+010580     MOVE 3                TO LINK-IN-SOC-NO.[span_512](start_span)[span_512](end_span)[span_513](start_span)[span_513](end_span)
+010590     CALL "UT0250" USING UT0250CA-CALL-AREA.[span_514](start_span)[span_514](end_span)[span_515](start_span)[span_515](end_span)
+010610     IF LINK-OUT-STAT NOT = "****[span_516](start_span)[span_517](start_span)"[span_516](end_span)[span_517](end_span)
+010620        DISPLAY "SSR940S:(Y200-) OPEN ERROR - "
+010630     END-IF.
+010640  Y200-EXIT.   
+010650     EXIT.
 
-       DO-PERFORM-FIELDS.
-           EXEC SQL
-               SELECT TXN_CMP_SSR.NEXTVAL INTO :WA-TRAN-NO FROM DUAL[span_215](start_span)[span_215](end_span)
-           END-EXEC
-           PERFORM A300-GENERATE-BIC THRU A300-EXIT[span_216](start_span)[span_216](end_span)
-           PERFORM A400-GENERATE-20  THRU A400-EXIT[span_217](start_span)[span_217](end_span)
-           PERFORM A401-GENERATE-25  THRU A401-EXIT[span_218](start_span)[span_218](end_span)
-           PERFORM A402-GENERATE-28C THRU A402-EXIT[span_219](start_span)[span_219](end_span)
-           PERFORM A403-GENERATE-60  THRU A403-EXIT.[span_220](start_span)[span_220](end_span)
-       DO-PERFORM-FIELDS-EXIT.
-           EXIT.
+010670  U310-GET-GECT.
+010680       EXEC SQL DECLARE GETDETL7 CURSOR FOR[span_518](start_span)[span_518](end_span)[span_519](start_span)[span_519](end_span)
+010690       SELECT /*+ INDEX(GECT GECTUK_04) */[span_520](start_span)[span_520](end_span)[span_521](start_span)[span_521](end_span)
+010700            substr(var_area,33,30)[span_522](start_span)[span_522](end_span)[span_523](start_span)[span_523](end_span)
+010710       FROM GECT[span_524](start_span)[span_524](end_span)[span_525](start_span)[span_525](end_span)
+010730       WHERE (INST_NO   = '003'      AND[span_526](start_span)[span_526](end_span)[span_527](start_span)[span_527](end_span)
+010750              ACCT_NO   = :WS-ACT-NO AND[span_528](start_span)[span_528](end_span)[span_529](start_span)[span_529](end_span)
+010760              TRAN_TYPE = '20'       AND[span_530](start_span)[span_530](end_span)[span_531](start_span)[span_531](end_span)
+010770              TRAN_DATE = :WA-DATE   AND[span_532](start_span)[span_532](end_span)[span_533](start_span)[span_533](end_span)
+010780              JRNL_NO   = :WA-JRNL)[span_534](start_span)[span_534](end_span)[span_535](start_span)[span_535](end_span)
+010800       END-EXEC.[span_536](start_span)[span_536](end_span)[span_537](start_span)[span_537](end_span)
+010810       EXEC SQL OPEN GETDETL7 END-EXEC.[span_538](start_span)[span_538](end_span)[span_539](start_span)[span_539](end_span)
+010830  U310-EXIT.
+010840     EXIT.
 
-       A101-GENERATE-TAIL.
-           IF ( WA-PREV-ACT-NO = 0 AND[span_221](start_span)[span_221](end_span)
-                FLAG-62 = 1 AND EXIT-TRAN = 0 )[span_222](start_span)[span_222](end_span)
-              PERFORM A405-GENERATE-62 THRU A405-EXIT[span_223](start_span)[span_223](end_span)
-              MOVE 0   TO FLAG-62[span_224](start_span)[span_224](end_span)
-              MOVE 1   TO EXIT-TRAN[span_225](start_span)[span_225](end_span)
-              MOVE "Y" TO WS-EOF[span_226](start_span)[span_226](end_span)
-           ELSE
-              IF EXIT-TRAN = 0[span_227](start_span)[span_227](end_span)
-                 MOVE "Y" TO WS-EOF[span_228](start_span)[span_228](end_span)
-                 PERFORM A000-PROCESS THRU A000-EXIT[span_229](start_span)[span_229](end_span)
-                 MOVE 'F' TO WA-FLAG[span_230](start_span)[span_230](end_span)
-                 MOVE 1   TO FLAG1[span_231](start_span)[span_231](end_span)
-                 PERFORM DO-PERFORM-FIELDS THRU DO-PERFORM-FIELDS-EXIT[span_232](start_span)[span_232](end_span)
-                 PERFORM A405-GENERATE-62  THRU A405-EXIT[span_233](start_span)[span_233](end_span)
-                 MOVE 1   TO EXIT-TRAN[span_234](start_span)[span_234](end_span)
-              END-IF[span_235](start_span)[span_235](end_span)
-           END-IF.[span_236](start_span)[span_236](end_span)
-       A101-EXIT.
-           EXIT.
+010860  U320-FETCH-GECT.
+010870       EXEC SQL FETCH GETDETL7[span_540](start_span)[span_540](end_span)[span_541](start_span)[span_541](end_span)
+010880               INTO    :WG-NARR[span_542](start_span)[span_542](end_span)[span_543](start_span)[span_543](end_span)
+010890       END-EXEC.[span_544](start_span)[span_544](end_span)[span_545](start_span)[span_545](end_span)
+010900      IF SQLCODE = 1403 OR LESS THAN ZEROS[span_546](start_span)[span_546](end_span)[span_547](start_span)[span_547](end_span)
+010910         MOVE SPACES TO WG-NARR[span_548](start_span)[span_548](end_span)[span_549](start_span)[span_549](end_span)
+010920      END-IF.
+010930      IF SQLCODE = ZEROS[span_550](start_span)[span_550](end_span)[span_551](start_span)[span_551](end_span)
+010940         MOVE WG-NARR(1:16) TO WA-CORR-REF[span_552](start_span)[span_552](end_span)[span_553](start_span)[span_553](end_span)
+010950      END-IF.
+010970  U320-EXIT.
+010980       EXEC SQL CLOSE GETDETL7 END-EXEC.[span_554](start_span)[span_554](end_span)[span_555](start_span)[span_555](end_span)
+010990     EXIT. 
 
-       A000-PROCESS.
-           MOVE "003" TO WS-INST-NO[span_237](start_span)[span_237](end_span)
-           MOVE WS-ACT-NO TO WA-GLDM-ACT-NO[span_238](start_span)[span_238](end_span)
-           MOVE WS-GLDM-KEY TO SQ-GLDM-KEY[span_239](start_span)[span_239](end_span)
-           EXEC SQL
-               SELECT CUM_CURR_VAL[span_240](start_span)[span_240](end_span)
-               INTO   :WS-BGL-BALANCE[span_241](start_span)[span_241](end_span)
-               FROM   GLDM[span_242](start_span)[span_242](end_span)
-               WHERE  KEY_1 = :SQ-GLDM-KEY[span_243](start_span)[span_243](end_span)
-           END-EXEC[span_244](start_span)[span_244](end_span)
-           IF SQLCODE = ZEROS[span_245](start_span)[span_245](end_span)
-              MOVE WS-BGL-BALANCE TO WA-OPEN-BAL[span_246](start_span)[span_246](end_span)
-              MOVE WS-BGL-BALANCE TO WA-CLOS-AMNT[span_247](start_span)[span_247](end_span)
-           END-IF.[span_248](start_span)[span_248](end_span)
-       A000-EXIT.
-           EXIT.
+011100  A501-DEC-CURSOR.
+011110       EXEC SQL DECLARE GETDETL2 CURSOR FOR[span_556](start_span)[span_556](end_span)[span_557](start_span)[span_557](end_span)
+011120       SELECT    TXN_CMP_SSR.nextval[span_558](start_span)[span_558](end_span)[span_559](start_span)[span_559](end_span)
+011130       FROM DUAL[span_560](start_span)[span_560](end_span)[span_561](start_span)[span_561](end_span)
+011140       END-EXEC.[span_562](start_span)[span_562](end_span)[span_563](start_span)[span_563](end_span)
+011150       EXEC SQL OPEN GETDETL2 END-EXEC.[span_564](start_span)[span_564](end_span)[span_565](start_span)[span_565](end_span)
+011160  A501-EXIT.
+011170      EXIT.
 
-       A300-GENERATE-BIC.
-           STRING "{1:F01"         DELIMITED BY SIZE[span_249](start_span)[span_249](end_span)
-                  WA-BIC-CODE      DELIMITED BY SIZE[span_250](start_span)[span_250](end_span)
-                  "0000000000}"    DELIMITED BY SIZE[span_251](start_span)[span_251](end_span)
-                  "{2:I940"        DELIMITED BY SIZE[span_252](start_span)[span_252](end_span)
-                  WA-BIC-CODE      DELIMITED BY SIZE[span_253](start_span)[span_253](end_span)
-                  "N}{4:"          DELIMITED BY SIZE[span_254](start_span)[span_254](end_span)
-                  INTO WA-REC0[span_255](start_span)[span_255](end_span)
-           PERFORM WRITE-OUTPUT-LINE USING WA-REC0.
-       A300-EXIT.
-           EXIT.
+011190  A502-FETCH-CURSOR.
+011200        EXEC SQL FETCH GETDETL2[span_566](start_span)[span_566](end_span)[span_567](start_span)[span_567](end_span)
+011210                 INTO  :WA-TRAN-NO[span_568](start_span)[span_568](end_span)[span_569](start_span)[span_569](end_span)
+011220        END-EXEC.[span_570](start_span)[span_570](end_span)[span_571](start_span)[span_571](end_span)
+011240  A502-EXIT.
+011250        EXEC SQL CLOSE GETDETL2 END-EXEC.[span_572](start_span)[span_572](end_span)[span_573](start_span)[span_573](end_span)
+011260      EXIT.
 
-       A400-GENERATE-20.
-           STRING ":20:"          DELIMITED BY SIZE[span_256](start_span)[span_256](end_span)
-                  WA-TRAN-NO      DELIMITED BY SIZE[span_257](start_span)[span_257](end_span)
-                  INTO WA-REC1[span_258](start_span)[span_258](end_span)
-           PERFORM WRITE-OUTPUT-LINE USING WA-REC1.
-       A400-EXIT.
-           EXIT.
+011370  A400-GENERATE-20.
+011380     STRING ":20:"          DELIMITED BY SIZE[span_574](start_span)[span_574](end_span)[span_575](start_span)[span_575](end_span)
+011390              WA-TRAN-NO    DELIMITED BY SIZE[span_576](start_span)[span_576](end_span)[span_577](start_span)[span_577](end_span)
+011400              INTO WA-REC1.[span_578](start_span)[span_578](end_span)[span_579](start_span)[span_579](end_span)
+           PERFORM AP100-APPEND-LINE USING WA-REC1.
+011440  A400-EXIT.
+011450      EXIT.
 
-       A401-GENERATE-25.
-           MOVE WS-ACT-NO          TO UT0151CA-ACCT-IN[span_259](start_span)[span_259](end_span)
-           MOVE SOC-ACCT-NO-FORMAT TO UT0151CA-FORMAT[span_260](start_span)[span_260](end_span)
-           MOVE 2                  TO UT0151CA-CALL-FUNC[span_261](start_span)[span_261](end_span)
-           MOVE SOC-CHK-DGT        TO UT0151CA-CHK-DGT-TYPE[span_262](start_span)[span_262](end_span)
-           CALL "UT0151" USING UT0151CA-CALL-AREA[span_263](start_span)[span_263](end_span)
-           MOVE UT0151CA-ACCT-EX   TO WS-ACT-NO-CHK-DGT[span_264](start_span)[span_264](end_span)
-           STRING ":25:"             DELIMITED BY SIZE[span_265](start_span)[span_265](end_span)
-                  WS-ACT-NO-CHK-DGT  DELIMITED BY SIZE[span_266](start_span)[span_266](end_span)
-                  INTO WA-REC2[span_267](start_span)[span_267](end_span)
-           PERFORM WRITE-OUTPUT-LINE USING WA-REC2.
-       A401-EXIT.
-           EXIT.
+011470  A300-GENERATE-BIC.
+011480     STRING "{1:F01"         DELIMITED BY SIZE[span_580](start_span)[span_580](end_span)[span_581](start_span)[span_581](end_span)
+011490            WA-BIC-CODE      DELIMITED BY SIZE[span_582](start_span)[span_582](end_span)[span_583](start_span)[span_583](end_span)
+011520            "0000000000}"    DELIMITED BY SIZE[span_584](start_span)[span_584](end_span)[span_585](start_span)[span_585](end_span)
+011560            "{2:I940"        DELIMITED BY SIZE[span_586](start_span)[span_586](end_span)[span_587](start_span)[span_587](end_span)
+011570            WA-BIC-CODE      DELIMITED BY SIZE[span_588](start_span)[span_588](end_span)[span_589](start_span)[span_589](end_span)
+011600            "N}{4:"          DELIMITED BY SIZE[span_590](start_span)[span_590](end_span)[span_591](start_span)[span_591](end_span)
+011620            INTO WA-REC0.[span_592](start_span)[span_592](end_span)[span_593](start_span)[span_593](end_span)
+           PERFORM AP100-APPEND-LINE USING WA-REC0.
+011660  A300-EXIT.
+011670      EXIT.
 
-       A402-GENERATE-28C.
-           STRING ":28C:"          DELIMITED BY SIZE[span_268](start_span)[span_268](end_span)
-                  WA-STMNT-NO      DELIMITED BY SIZE[span_269](start_span)[span_269](end_span)
-                  "/"              DELIMITED BY SIZE[span_270](start_span)[span_270](end_span)
-                  "00001"          DELIMITED BY SIZE[span_271](start_span)[span_271](end_span)
-                  INTO WA-REC3[span_272](start_span)[span_272](end_span)
-           PERFORM WRITE-OUTPUT-LINE USING WA-REC3.
-       A402-EXIT.
-           EXIT.
+011690  A401-GENERATE-25.
+S20619     MOVE WS-ACT-NO                TO UT0151CA-ACCT-IN.[span_594](start_span)[span_594](end_span)[span_595](start_span)[span_595](end_span)
+S20619     MOVE SOC-ACCT-NO-FORMAT       TO UT0151CA-FORMAT.[span_596](start_span)[span_596](end_span)[span_597](start_span)[span_597](end_span)
+011720     MOVE 2 TO  UT0151CA-CALL-FUNC.[span_598](start_span)[span_598](end_span)[span_599](start_span)[span_599](end_span)
+011730     MOVE SOC-CHK-DGT   TO       UT0151CA-CHK-DGT-TYPE.[span_600](start_span)[span_600](end_span)[span_601](start_span)[span_601](end_span)
+011740     CALL "UT0151" USING UT0151CA-CALL-AREA.[span_602](start_span)[span_602](end_span)[span_603](start_span)[span_603](end_span)
+S20619     MOVE UT0151CA-ACCT-EX        TO WS-ACT-NO-CHK-DGT.[span_604](start_span)[span_604](end_span)[span_605](start_span)[span_605](end_span)
+011760     STRING ":25:"             DELIMITED BY SIZE[span_606](start_span)[span_606](end_span)[span_607](start_span)[span_607](end_span)
+011770            WS-ACT-NO-CHK-DGT  DELIMITED BY SIZE[span_608](start_span)[span_608](end_span)[span_609](start_span)[span_609](end_span)
+011780            INTO WA-REC2.[span_610](start_span)[span_610](end_span)[span_611](start_span)[span_611](end_span)
+           PERFORM AP100-APPEND-LINE USING WA-REC2.
+011820  A401-EXIT.
+011830      EXIT.
 
-       A403-GENERATE-60.
-           IF WA-FLAG = 'F[span_273](start_span)'[span_273](end_span)
-              IF WA-OPEN-BAL IS NEGATIVE[span_274](start_span)[span_274](end_span)
-                 MOVE "-" TO WA-SIGN[span_275](start_span)[span_275](end_span)
-              ELSE
-                 MOVE SPACES TO WA-SIGN[span_276](start_span)[span_276](end_span)
-              END-IF[span_277](start_span)[span_277](end_span)
-              IF WA-SIGN = '-[span_278](start_span)'[span_278](end_span)
-                 MOVE 'D' TO WA-IND[span_279](start_span)[span_279](end_span)
-              ELSE
-                 MOVE 'C' TO WA-IND[span_280](start_span)[span_280](end_span)
-              END-IF[span_281](start_span)[span_281](end_span)
-           END-IF[span_282](start_span)[span_282](end_span)
-           MOVE ZEROS TO WA-I[span_283](start_span)[span_283](end_span)
-           STRING ":60F"            DELIMITED BY SIZE[span_284](start_span)[span_284](end_span)
-                  ":"               DELIMITED BY SIZE[span_285](start_span)[span_285](end_span)
-                  WA-IND            DELIMITED BY SIZE[span_286](start_span)[span_286](end_span)
-                  WA-TRAN-YY        DELIMITED BY SIZE[span_287](start_span)[span_287](end_span)
-                  WA-TRAN-MM        DELIMITED BY SIZE[span_288](start_span)[span_288](end_span)
-                  WA-TRAN-DD        DELIMITED BY SIZE[span_289](start_span)[span_289](end_span)
-                  WS-CURR           DELIMITED BY SIZE[span_290](start_span)[span_290](end_span)
-                  INTO WA-R4[span_291](start_span)[span_291](end_span)
-           MOVE WA-OPEN-BAL TO WA-TEMP-BAL[span_292](start_span)[span_292](end_span)
-           MOVE WA-TEMP-BAL(1:14) TO WS-T1[span_293](start_span)[span_293](end_span)
-           MOVE WA-TEMP-BAL(15:3) TO WS-T3[span_294](start_span)[span_294](end_span)
-           PERFORM VARYING WA-S FROM 1 BY 1[span_295](start_span)[span_295](end_span)
-                   UNTIL WS-T1(WA-S:1) NOT = ' [span_296](start_span)'[span_296](end_span)
-           END-PERFORM[span_297](start_span)[span_297](end_span)
-           PERFORM VARYING WA-W FROM 3 BY -1[span_298](start_span)[span_298](end_span)
-                   UNTIL WS-T3(WA-W:1) NOT = ZEROS[span_299](start_span)[span_299](end_span)
-           END-PERFORM[span_300](start_span)[span_300](end_span)
-           COMPUTE WA-W = WA-W + 16[span_301](start_span)[span_301](end_span)
-           IF WS-T3 = ZEROS[span_302](start_span)[span_302](end_span)
-              COMPUTE WW-B = WA-W - WA-S[span_303](start_span)[span_303](end_span)
-              MOVE WS-TEMP-BALANCE(WA-S:WW-B) TO WA-OPENING-BAL04[span_304](start_span)[span_304](end_span)
-           ELSE
-              COMPUTE WA-W = WA-W - WA-S[span_305](start_span)[span_305](end_span)
-              MOVE WS-TEMP-BALANCE(WA-S:WA-W) TO WA-OPENING-BAL04[span_306](start_span)[span_306](end_span)
-           END-IF[span_307](start_span)[span_307](end_span)
-           IF WA-OPEN-BAL = ZEROS[span_308](start_span)[span_308](end_span)
-              MOVE '0,' TO WA-OPENING-BAL04[span_309](start_span)[span_309](end_span)
-           END-IF[span_310](start_span)[span_310](end_span)
-           MOVE WA-REC4 TO final-rec-temp
-           PERFORM WRITE-OUTPUT-LINE USING WA-REC4.
-       A403-EXIT.
-           EXIT.
+011850  A402-GENERATE-28C.
+011860     STRING ":28C:"          DELIMITED BY SIZE[span_612](start_span)[span_612](end_span)[span_613](start_span)[span_613](end_span)
+011870             WA-STMNT-NO     DELIMITED BY SIZE[span_614](start_span)[span_614](end_span)[span_615](start_span)[span_615](end_span)
+011880             "/"             DELIMITED BY SIZE[span_616](start_span)[span_616](end_span)[span_617](start_span)[span_617](end_span)
+011890             "00001"         DELIMITED BY SIZE[span_618](start_span)[span_618](end_span)[span_619](start_span)[span_619](end_span)
+011900              INTO WA-REC3.[span_620](start_span)[span_620](end_span)[span_621](start_span)[span_621](end_span)
+           PERFORM AP100-APPEND-LINE USING WA-REC3.
+011940  A402-EXIT.
+011950      EXIT.
 
-       A404-GENERATE-61.
-           IF WA-AMT1 IS NEGATIVE[span_311](start_span)[span_311](end_span)
-              MOVE "-" TO WB-SIGN[span_312](start_span)[span_312](end_span)
-           ELSE
-              MOVE SPACES TO WB-SIGN[span_313](start_span)[span_313](end_span)
-           END-IF[span_314](start_span)[span_314](end_span)
-           IF WB-SIGN = '-[span_315](start_span)'[span_315](end_span)
-              MOVE 'D' TO WB-IND[span_316](start_span)[span_316](end_span)
-           ELSE
-              MOVE 'C' TO WB-IND[span_317](start_span)[span_317](end_span)
-           END-IF[span_318](start_span)[span_318](end_span)
+011970  A403-GENERATE-60.
+011980    IF WA-FLAG = 'F[span_622](start_span)[span_623](start_span)'[span_622](end_span)[span_623](end_span)
+011990       IF WA-OPEN-BAL IS NEGATIVE[span_624](start_span)[span_624](end_span)[span_625](start_span)[span_625](end_span)
+012000          MOVE "-" TO WA-SIGN[span_626](start_span)[span_626](end_span)[span_627](start_span)[span_627](end_span)
+012010       ELSE
+012020          MOVE SPACES TO WA-SIGN[span_628](start_span)[span_628](end_span)[span_629](start_span)[span_629](end_span)
+012030       END-IF
+012040    END-IF.
+012050    IF WA-FLAG = 'F[span_630](start_span)[span_631](start_span)'[span_630](end_span)[span_631](end_span)
+012060       IF WA-SIGN = '-[span_632](start_span)[span_633](start_span)'[span_632](end_span)[span_633](end_span)
+012070          MOVE 'D'   TO WA-IND[span_634](start_span)[span_634](end_span)[span_635](start_span)[span_635](end_span)
+012080       ELSE
+012090          MOVE 'C'   TO WA-IND[span_636](start_span)[span_636](end_span)[span_637](start_span)[span_637](end_span)
+012100       END-IF
+012110    END-IF.
+012120    MOVE ZEROS              TO WA-I.[span_638](start_span)[span_638](end_span)[span_639](start_span)[span_639](end_span)
+V75081     IF WS-CURR = 'ACD' OR 'ACE[span_640](start_span)[span_641](start_span)'[span_640](end_span)[span_641](end_span)
+V75081       OPEN INPUT BGL-CURR[span_642](start_span)[span_642](end_span)[span_643](start_span)[span_643](end_span)
+V75081       MOVE "N" TO WA-ACCT-FOUND[span_644](start_span)[span_644](end_span)[span_645](start_span)[span_645](end_span)
+V75081       PERFORM R100-READ-CARD-CURR THRU R100-EXIT[span_646](start_span)[span_646](end_span)[span_647](start_span)[span_647](end_span)
+V75081                      UNTIL WA-ACCT-FOUND = "Y[span_648](start_span)[span_649](start_span)"[span_648](end_span)[span_649](end_span)
+V75081       CLOSE BGL-CURR[span_650](start_span)[span_650](end_span)[span_651](start_span)[span_651](end_span)
+V75081     END-IF.
+012220    STRING ":60F"            DELIMITED BY SIZE[span_652](start_span)[span_652](end_span)[span_653](start_span)[span_653](end_span)
+012230           ":"              DELIMITED BY SIZE[span_654](start_span)[span_654](end_span)[span_655](start_span)[span_655](end_span)
+012240            WA-IND          DELIMITED BY SIZE[span_656](start_span)[span_656](end_span)[span_657](start_span)[span_657](end_span)
+012250            WA-TRAN-YY      DELIMITED BY SIZE[span_658](start_span)[span_658](end_span)[span_659](start_span)[span_659](end_span)
+012260            WA-TRAN-MM      DELIMITED BY SIZE[span_660](start_span)[span_660](end_span)[span_661](start_span)[span_661](end_span)
+012270            WA-TRAN-DD      DELIMITED BY SIZE[span_662](start_span)[span_662](end_span)[span_663](start_span)[span_663](end_span)
+012280            WS-CURR         DELIMITED BY SIZE[span_664](start_span)[span_664](end_span)[span_665](start_span)[span_665](end_span)
+012290    INTO    WA-R4.[span_666](start_span)[span_666](end_span)[span_667](start_span)[span_667](end_span)
+012300    MOVE WA-OPEN-BAL TO WA-TEMP-BAL.[span_668](start_span)[span_668](end_span)[span_669](start_span)[span_669](end_span)
+012310    MOVE WA-TEMP-BAL(1:14) TO WS-T1.[span_670](start_span)[span_670](end_span)[span_671](start_span)[span_671](end_span)
+012320    MOVE WA-TEMP-BAL(15:3)  TO WS-T3.[span_672](start_span)[span_672](end_span)[span_673](start_span)[span_673](end_span)
+012330    PERFORM VARYING WA-S FROM 1 BY 1[span_674](start_span)[span_674](end_span)[span_675](start_span)[span_675](end_span)
+012340            UNTIL WS-T1(WA-S:1)  NOT = ' [span_676](start_span)[span_677](start_span)'[span_676](end_span)[span_677](end_span)
+012350    END-PERFORM.
+012360    PERFORM VARYING WA-W FROM 3 BY -1[span_678](start_span)[span_678](end_span)[span_679](start_span)[span_679](end_span)
+012370    UNTIL  WS-T3(WA-W:1) NOT = ZEROS[span_680](start_span)[span_680](end_span)[span_681](start_span)[span_681](end_span)
+012380    END-PERFORM.
+012390    COMPUTE WA-W = WA-W + 16 .[span_682](start_span)[span_682](end_span)[span_683](start_span)[span_683](end_span)
+012400    IF WS-T3 = ZEROS[span_684](start_span)[span_684](end_span)[span_685](start_span)[span_685](end_span)
+012410      COMPUTE WW-B = WA-W - WA-S[span_686](start_span)[span_686](end_span)[span_687](start_span)[span_687](end_span)
+012420      MOVE WS-TEMP-BALANCE(WA-S:WW-B) TO WA-OPENING-BAL04[span_688](start_span)[span_688](end_span)[span_689](start_span)[span_689](end_span)
+012430    ELSE
+012440      COMPUTE WA-W = WA-W - WA-S[span_690](start_span)[span_690](end_span)[span_691](start_span)[span_691](end_span)
+012450      MOVE WS-TEMP-BALANCE(WA-S:WA-W) TO WA-OPENING-BAL04[span_692](start_span)[span_692](end_span)[span_693](start_span)[span_693](end_span)
+012460    END-IF.
+012470    IF WA-OPEN-BAL = ZEROS[span_694](start_span)[span_694](end_span)[span_695](start_span)[span_695](end_span)
+012480      MOVE '0,' TO WA-OPENING-BAL04[span_696](start_span)[span_696](end_span)[span_697](start_span)[span_697](end_span)
+012490    END-IF.
+          PERFORM AP100-APPEND-LINE USING WA-REC4.
+012520  A403-EXIT.
+012530      EXIT.
 
-           COMPUTE WA-TEMP-AMNT = WA-TEMP-AMNT + WA-AMT1[span_319](start_span)[span_319](end_span)
-           MOVE ZEROS TO WA-I[span_320](start_span)[span_320](end_span)
-           STRING ":61:"              DELIMITED BY SIZE[span_321](start_span)[span_321](end_span)
-                  WA-VAL-YY           DELIMITED BY SIZE[span_322](start_span)[span_322](end_span)
-                  WA-VAL-MM           DELIMITED BY SIZE[span_323](start_span)[span_323](end_span)
-                  WA-VAL-DD           DELIMITED BY SIZE[span_324](start_span)[span_324](end_span)
-                  WA-TRAN-MM          DELIMITED BY SIZE[span_325](start_span)[span_325](end_span)
-                  WA-TRAN-DD          DELIMITED BY SIZE[span_326](start_span)[span_326](end_span)
-                  WB-IND              DELIMITED BY SIZE[span_327](start_span)[span_327](end_span)
-                  INTO WA-R5[span_328](start_span)[span_328](end_span)
-           MOVE WA-AMT1 TO WA-TRAN-AMOUNT[span_329](start_span)[span_329](end_span)
-           MOVE WA-TRAN-AMOUNT(1:14) TO WA-AMT-PART1[span_330](start_span)[span_330](end_span)
-           MOVE ','                  TO WA-AMT-PART2[span_331](start_span)[span_331](end_span)
-           MOVE WA-TRAN-AMOUNT(15:3) TO WA-AMT-PART3[span_332](start_span)[span_332](end_span)
+012550  A404-GENERATE-61.
+012560    IF WA-AMT1 IS NEGATIVE[span_698](start_span)[span_698](end_span)[span_699](start_span)[span_699](end_span)
+012570       MOVE "-" TO WB-SIGN[span_700](start_span)[span_700](end_span)[span_701](start_span)[span_701](end_span)
+012580    ELSE
+012590       MOVE SPACES TO WB-SIGN[span_702](start_span)[span_702](end_span)[span_703](start_span)[span_703](end_span)
+012600    END-IF.
+012610    IF WB-SIGN = '-[span_704](start_span)[span_705](start_span)'[span_704](end_span)[span_705](end_span)
+012620       MOVE 'D'   TO WB-IND[span_706](start_span)[span_706](end_span)[span_707](start_span)[span_707](end_span)
+012630    ELSE
+012640       MOVE 'C'   TO WB-IND[span_708](start_span)[span_708](end_span)[span_709](start_span)[span_709](end_span)
+012650    END-IF.
+012660
+012670    COMPUTE WA-TEMP-AMNT = WA-TEMP-AMNT + WA-AMT1.[span_710](start_span)[span_710](end_span)[span_711](start_span)[span_711](end_span)
+012680    MOVE ZEROS TO WA-I.[span_712](start_span)[span_712](end_span)[span_713](start_span)[span_713](end_span)
+012690    STRING ":61:"              DELIMITED BY SIZE[span_714](start_span)[span_714](end_span)[span_715](start_span)[span_715](end_span)
+012740            WA-VAL-YY          DELIMITED BY SIZE[span_716](start_span)[span_716](end_span)[span_717](start_span)[span_717](end_span)
+012750            WA-VAL-MM          DELIMITED BY SIZE[span_718](start_span)[span_718](end_span)[span_719](start_span)[span_719](end_span)
+012760            WA-VAL-DD          DELIMITED BY SIZE[span_720](start_span)[span_720](end_span)[span_721](start_span)[span_721](end_span)
+012780            WA-TRAN-MM         DELIMITED BY SIZE[span_722](start_span)[span_722](end_span)[span_723](start_span)[span_723](end_span)
+012790            WA-TRAN-DD         DELIMITED BY SIZE[span_724](start_span)[span_724](end_span)[span_725](start_span)[span_725](end_span)
+012800            WB-IND             DELIMITED BY SIZE[span_726](start_span)[span_726](end_span)[span_727](start_span)[span_727](end_span)
+012810    INTO    WA-R5.[span_728](start_span)[span_728](end_span)[span_729](start_span)[span_729](end_span)
+012820   MOVE WA-AMT1               TO WA-TRAN-AMOUNT.[span_730](start_span)[span_730](end_span)[span_731](start_span)[span_731](end_span)
+012830
+012840   MOVE WA-TRAN-AMOUNT(1:14)  TO WA-AMT-PART1.[span_732](start_span)[span_732](end_span)[span_733](start_span)[span_733](end_span)
+012850   MOVE ','                   TO WA-AMT-PART2.[span_734](start_span)[span_734](end_span)[span_735](start_span)[span_735](end_span)
+012860   MOVE WA-TRAN-AMOUNT(15:3)  TO WA-AMT-PART3.[span_736](start_span)[span_736](end_span)[span_737](start_span)[span_737](end_span)
+012870
+012880   MOVE 1 TO WA-CO.[span_738](start_span)[span_738](end_span)[span_739](start_span)[span_739](end_span)
+012890   IF WA-AMT-PART1-RE = ZEROS[span_740](start_span)[span_740](end_span)[span_741](start_span)[span_741](end_span)
+012900      MOVE ZEROS TO WA-AMT-PART1[span_742](start_span)[span_742](end_span)[span_743](start_span)[span_743](end_span)
+012910      MOVE 14 TO WA-CO[span_744](start_span)[span_744](end_span)[span_745](start_span)[span_745](end_span)
+012920   END-IF.
+012930   PERFORM VARYING WA-CO FROM 1 BY 1[span_746](start_span)[span_746](end_span)[span_747](start_span)[span_747](end_span)
+012940   UNTIL  WA-NO(WA-CO) NOT = ZEROS OR WA-CO = 14[span_748](start_span)[span_748](end_span)[span_749](start_span)[span_749](end_span)
+012950   END-PERFORM.
+012960
+012970   MOVE 1 TO WB-CO.[span_750](start_span)[span_750](end_span)[span_751](start_span)[span_751](end_span)
+012980   IF WA-AMT-PART3-RE = ZEROS[span_752](start_span)[span_752](end_span)[span_753](start_span)[span_753](end_span)
+012990      MOVE 'A' TO P-IND[span_754](start_span)[span_754](end_span)[span_755](start_span)[span_755](end_span)
+013000   ELSE
+013010      PERFORM VARYING WB-CO FROM 3 BY -1[span_756](start_span)[span_756](end_span)[span_757](start_span)[span_757](end_span)
+013020      UNTIL  WB-NO(WB-CO) NOT = ZEROS[span_758](start_span)[span_758](end_span)[span_759](start_span)[span_759](end_span)
+013030      END-PERFORM
+013040      MOVE SPACES TO P-IND[span_760](start_span)[span_760](end_span)[span_761](start_span)[span_761](end_span)
+013050   END-IF.
+013060
+PPPPPP   IF ((WA-TRAN-CODE = 20045 OR 20055) AND (WA-NM-FLG = 'Y'))[span_762](start_span)[span_762](end_span)[span_763](start_span)[span_763](end_span)
+PPPPPP    INITIALIZE WA-NARR-REF[span_764](start_span)[span_764](end_span)[span_765](start_span)[span_765](end_span)
+PPPPPP    PERFORM P100-REFNO-NTRF THRU P100-REFNO-EXIT[span_766](start_span)[span_766](end_span)[span_767](start_span)[span_767](end_span)
+PPPPPP   ELSE
+PPPPPP    MOVE WA-BR-REF      TO WA-PART-BR-REF[span_768](start_span)[span_768](end_span)[span_769](start_span)[span_769](end_span)
+PPPPPP   END-IF.
+013160   MOVE WA-CORR-REF    TO WA-PART-CORR-REF.[span_770](start_span)[span_770](end_span)[span_771](start_span)[span_771](end_span)
+013170   MOVE WA-SR-NO       TO WA-MFX-SR-NO.[span_772](start_span)[span_772](end_span)[span_773](start_span)[span_773](end_span)
+013180   MOVE SPACES         TO WA-REC5.[span_774](start_span)[span_774](end_span)[span_775](start_span)[span_775](end_span)
+013190   IF P-IND = 'A[span_776](start_span)[span_777](start_span)'[span_776](end_span)[span_777](end_span)
+013200   STRING WA-R5                          DELIMITED BY SIZE[span_778](start_span)[span_778](end_span)[span_779](start_span)[span_779](end_span)
+013210          WA-AMT-PART1(WA-CO:15 - WA-CO) DELIMITED BY SIZE[span_780](start_span)[span_780](end_span)[span_781](start_span)[span_781](end_span)
+013220          WA-AMT-PART2                   DELIMITED BY SIZE[span_782](start_span)[span_782](end_span)[span_783](start_span)[span_783](end_span)
+013230          WA-NTRF                        DELIMITED BY SIZE[span_784](start_span)[span_784](end_span)[span_785](start_span)[span_785](end_span)
+013240          WA-PART-BR-REF                 DELIMITED BY SIZE[span_786](start_span)[span_786](end_span)[span_787](start_span)[span_787](end_span)
+013260          "//"                           DELIMITED BY SIZE[span_788](start_span)[span_788](end_span)[span_789](start_span)[span_789](end_span)
+013280          WA-PART-CORR-REF               DELIMITED BY SIZE[span_790](start_span)[span_790](end_span)[span_791](start_span)[span_791](end_span)
+013320          INTO  WA-REC5[span_792](start_span)[span_792](end_span)[span_793](start_span)[span_793](end_span)
+013330   ELSE
+013340   STRING WA-R5                          DELIMITED BY SIZE[span_794](start_span)[span_794](end_span)[span_795](start_span)[span_795](end_span)
+013350          WA-AMT-PART1(WA-CO:15 - WA-CO) DELIMITED BY SIZE[span_796](start_span)[span_796](end_span)[span_797](start_span)[span_797](end_span)
+013360          WA-AMT-PART2                   DELIMITED BY SIZE[span_798](start_span)[span_798](end_span)[span_799](start_span)[span_799](end_span)
+013370          WA-AMT-PART3(1:WB-CO)          DELIMITED BY SIZE[span_800](start_span)[span_800](end_span)[span_801](start_span)[span_801](end_span)
+013380          WA-NTRF                        DELIMITED BY SIZE[span_802](start_span)[span_802](end_span)[span_803](start_span)[span_803](end_span)
+013390          WA-PART-BR-REF                 DELIMITED BY SIZE[span_804](start_span)[span_804](end_span)[span_805](start_span)[span_805](end_span)
+013410          "//"                           DELIMITED BY SIZE[span_806](start_span)[span_806](end_span)[span_807](start_span)[span_807](end_span)
+013430          WA-PART-CORR-REF               DELIMITED BY SIZE[span_808](start_span)[span_808](end_span)[span_809](start_span)[span_809](end_span)
+013470          INTO  WA-REC5[span_810](start_span)[span_810](end_span)[span_811](start_span)[span_811](end_span)
+013480   END-IF.
+         PERFORM AP100-APPEND-LINE USING WA-REC5.
+013530   STRING WA-MFX-SR-NO                   DELIMITED BY SIZE[span_812](start_span)[span_812](end_span)[span_813](start_span)[span_813](end_span)
+013540          INTO WA-REC5.
+         PERFORM AP100-APPEND-LINE USING WA-REC5.
+013580 A404-EXIT.
+013590     EXIT.
 
-           MOVE 1 TO WA-CO[span_333](start_span)[span_333](end_span)
-           IF WA-AMT-PART1-RE = ZEROS[span_334](start_span)[span_334](end_span)
-              MOVE ZEROS TO WA-AMT-PART1[span_335](start_span)[span_335](end_span)
-              MOVE 14    TO WA-CO[span_336](start_span)[span_336](end_span)
-           END-IF[span_337](start_span)[span_337](end_span)
-           PERFORM VARYING WA-CO FROM 1 BY 1[span_338](start_span)[span_338](end_span)
-                   UNTIL WA-NO(WA-CO) NOT = ZEROS OR WA-CO = 14[span_339](start_span)[span_339](end_span)
-           END-PERFORM[span_340](start_span)[span_340](end_span)
+013610  A405-GENERATE-62.
+013620    IF FLAG1 = 0[span_814](start_span)[span_814](end_span)[span_815](start_span)[span_815](end_span)
+013630       COMPUTE WA-CLOS-AMNT = WA-OPEN-BAL-TEM + WA-TEMP-AMNT[span_816](start_span)[span_816](end_span)[span_817](start_span)[span_817](end_span)
+013640    END-IF.
+013650    IF WA-CLOS-AMNT IS NEGATIVE[span_818](start_span)[span_818](end_span)[span_819](start_span)[span_819](end_span)
+013660       MOVE '-' TO WC-SIGN[span_820](start_span)[span_820](end_span)[span_821](start_span)[span_821](end_span)
+013670    ELSE
+013680       MOVE ' ' TO WC-SIGN[span_822](start_span)[span_822](end_span)[span_823](start_span)[span_823](end_span)
+013690    END-IF.
+013700    IF WC-SIGN = '-[span_824](start_span)[span_825](start_span)'[span_824](end_span)[span_825](end_span)
+013710       MOVE 'D'   TO WC-IND[span_826](start_span)[span_826](end_span)[span_827](start_span)[span_827](end_span)
+013720    ELSE
+013730       MOVE 'C'   TO WC-IND[span_828](start_span)[span_828](end_span)[span_829](start_span)[span_829](end_span)
+013740    END-IF.
+013750
+013760    STRING ":62F:"              DELIMITED BY SIZE[span_830](start_span)[span_830](end_span)[span_831](start_span)[span_831](end_span)
+013770           WC-IND               DELIMITED BY SIZE[span_832](start_span)[span_832](end_span)[span_833](start_span)[span_833](end_span)
+013780           WA-TRAN-YY           DELIMITED BY SIZE[span_834](start_span)[span_834](end_span)[span_835](start_span)[span_835](end_span)
+013790           WA-TRAN-MM           DELIMITED BY SIZE[span_836](start_span)[span_836](end_span)[span_837](start_span)[span_837](end_span)
+013800           WA-TRAN-DD           DELIMITED BY SIZE[span_838](start_span)[span_838](end_span)[span_839](start_span)[span_839](end_span)
+013810           WS-CURR              DELIMITED BY SIZE[span_840](start_span)[span_840](end_span)[span_841](start_span)[span_841](end_span)
+013820    INTO WA-R6.[span_842](start_span)[span_842](end_span)[span_843](start_span)[span_843](end_span)
+013830    MOVE  WA-CLOS-AMNT         TO WA-CLOS-AMNT1.[span_844](start_span)[span_844](end_span)[span_845](start_span)[span_845](end_span)
+013840    MOVE  WA-CLOS-AMNT1(1:14)  TO WC-PART1.[span_846](start_span)[span_846](end_span)[span_847](start_span)[span_847](end_span)
+013850    MOVE  WA-CLOS-AMNT1(15:3)  TO WC-PART3.[span_848](start_span)[span_848](end_span)[span_849](start_span)[span_849](end_span)
+013860    PERFORM VARYING WE-A FROM 1 BY 1 UNTIL[span_850](start_span)[span_850](end_span)[span_851](start_span)[span_851](end_span)
+013870      WC-PART1(WE-A:1) NOT = ' [span_852](start_span)[span_853](start_span)'[span_852](end_span)[span_853](end_span)
+013880    END-PERFORM.
+013890    PERFORM VARYING WE-B FROM 3 BY -1[span_854](start_span)[span_854](end_span)[span_855](start_span)[span_855](end_span)
+013900    UNTIL  WC-PART3(WE-B:1) NOT = ZEROS[span_856](start_span)[span_856](end_span)[span_857](start_span)[span_857](end_span)
+013910    END-PERFORM.
+013920    COMPUTE WE-B = WE-B + 16.[span_858](start_span)[span_858](end_span)[span_859](start_span)[span_859](end_span)
+013930    IF WC-PART3 = ZEROS[span_860](start_span)[span_860](end_span)[span_861](start_span)[span_861](end_span)
+013940       COMPUTE WE-C = WE-B - WE-A[span_862](start_span)[span_862](end_span)[span_863](start_span)[span_863](end_span)
+013950       MOVE WA-CLOS-AMNT2(WE-A:WE-C) TO WA-CLOS-AMNT6[span_864](start_span)[span_864](end_span)[span_865](start_span)[span_865](end_span)
+013960    ELSE
+013970       COMPUTE WE-D = WE-B - WE-A[span_866](start_span)[span_866](end_span)[span_867](start_span)[span_867](end_span)
+013980       MOVE WA-CLOS-AMNT2(WE-A:WE-D)  TO WA-CLOS-AMNT6[span_868](start_span)[span_868](end_span)[span_869](start_span)[span_869](end_span)
+013990    END-IF.
+014000    IF WA-CLOS-AMNT = ZEROS[span_870](start_span)[span_870](end_span)[span_871](start_span)[span_871](end_span)
+014010       MOVE '0,' TO WA-CLOS-AMNT6.[span_872](start_span)[span_872](end_span)[span_873](start_span)[span_873](end_span)
+          PERFORM AP100-APPEND-LINE USING WA-REC6.
+          PERFORM AP100-APPEND-LINE USING WA-MESSAGE-END.
+014090    MOVE 0 TO FLAG1.[span_874](start_span)[span_874](end_span)[span_875](start_span)[span_875](end_span)
+014110  A405-EXIT.
+014120      EXIT.
 
-           MOVE 1 TO WB-CO[span_341](start_span)[span_341](end_span)
-           IF WA-AMT-PART3-RE = ZEROS[span_342](start_span)[span_342](end_span)
-              MOVE 'A' TO P-IND[span_343](start_span)[span_343](end_span)
-           ELSE
-              PERFORM VARYING WB-CO FROM 3 BY -1[span_344](start_span)[span_344](end_span)
-                      UNTIL WB-NO(WB-CO) NOT = ZEROS[span_345](start_span)[span_345](end_span)
-              END-PERFORM[span_346](start_span)[span_346](end_span)
-              MOVE SPACES TO P-IND[span_347](start_span)[span_347](end_span)
-           END-IF[span_348](start_span)[span_348](end_span)
+TTTTTT A406-GENERATE-86.
+TTTTTT  MOVE WA-TRAN-CODE TO WA-R8-TRAN-CODE.[span_876](start_span)[span_876](end_span)[span_877](start_span)[span_877](end_span)
+TTTTTT  PERFORM A360-CALL-UT0250 THRU A360-CALL-UT0250-EXIT.[span_878](start_span)[span_878](end_span)[span_879](start_span)[span_879](end_span)
+        PERFORM AP100-APPEND-LINE USING WA-REC8.
+TTTTTT A406-EXIT.
+TTTTTT EXIT.
 
-           IF ((WA-TRAN-CODE = 20045 OR 20055) AND (WA-NM-FLG = 'Y'))[span_349](start_span)[span_349](end_span)
-              INITIALIZE WA-NARR-REF[span_350](start_span)[span_350](end_span)
-              PERFORM P100-REFNO-NTRF THRU P100-REFNO-EXIT[span_351](start_span)[span_351](end_span)
-           ELSE
-              MOVE WA-BR-REF TO WA-PART-BR-REF[span_352](start_span)[span_352](end_span)
-           END-IF[span_353](start_span)[span_353](end_span)
+TTTTTT A360-CALL-UT0250.
+T74072   INITIALIZE WA-R8-DESC-TEMP.[span_880](start_span)[span_880](end_span)[span_881](start_span)[span_881](end_span)
+TTTTTT   PERFORM A360-CALL-TO-UT0250 THRU A360-CALL-TO-UT0250-EXIT.[span_882](start_span)[span_882](end_span)[span_883](start_span)[span_883](end_span)
+TTTTTT   IF LINK-OUT-STAT = "****[span_884](start_span)[span_885](start_span)"[span_884](end_span)[span_885](end_span)
+TTTTTT      MOVE LINK-IN-TXCODE TO WA-R8-TRAN-CODE[span_886](start_span)[span_886](end_span)[span_887](start_span)[span_887](end_span)
+TTTTTT      MOVE LINK-TRAN-DESC TO WA-R8-DESC-TEMP[span_888](start_span)[span_888](end_span)[span_889](start_span)[span_889](end_span)
+TTTTTT      INITIALIZE WS-TALLY[span_890](start_span)[span_890](end_span)[span_891](start_span)[span_891](end_span)
+T74072      INITIALIZE WS-DESC-LENGTH[span_892](start_span)[span_892](end_span)[span_893](start_span)[span_893](end_span)
+TTTTTT      INSPECT WA-R8-DESC-TEMP TALLYING WS-TALLY[span_894](start_span)[span_894](end_span)[span_895](start_span)[span_895](end_span)
+TTTTTT                              FOR TRAILING SPACES[span_896](start_span)[span_896](end_span)[span_897](start_span)[span_897](end_span)
+TTTTTT      COMPUTE WS-DESC-LENGTH  = LENGTH OF WA-R8-DESC-TEMP[span_898](start_span)[span_898](end_span)[span_899](start_span)[span_899](end_span)
+TTTTTT                                               - WS-TALLY[span_900](start_span)[span_900](end_span)[span_901](start_span)[span_901](end_span)
+TTTTTT   END-IF.
+TTTTTT A360-CALL-UT0250-EXIT.
+TTTTTT    EXIT.
+TTTTTT
+TTTTTT A360-CALL-TO-UT0250.
+TTTTTT   MOVE 02                         TO LINK-IN-CALL-CODE.[span_902](start_span)[span_902](end_span)[span_903](start_span)[span_903](end_span)
+TTTTTT   MOVE '003'                      TO LINK-IN-SOC-NO.[span_904](start_span)[span_904](end_span)[span_905](start_span)[span_905](end_span)
+TTTTTT   MOVE WA-TRAN-CODE               TO LINK-IN-TXCODE.[span_906](start_span)[span_906](end_span)[span_907](start_span)[span_907](end_span)
+TTTTTT   CALL "UT0250"                   USING UT0250CA-CALL-AREA.[span_908](start_span)[span_908](end_span)[span_909](start_span)[span_909](end_span)
+TTTTTT A360-CALL-TO-UT0250-EXIT.
+TTTTTT   EXIT.
 
-           MOVE WA-CORR-REF TO WA-PART-CORR-REF[span_354](start_span)[span_354](end_span)
-           MOVE WA-SR-NO    TO WA-MFX-SR-NO[span_355](start_span)[span_355](end_span)
-           MOVE SPACES      TO WA-REC5[span_356](start_span)[span_356](end_span)
-           IF P-IND = 'A[span_357](start_span)'[span_357](end_span)
-              STRING WA-R5                          DELIMITED BY SIZE[span_358](start_span)[span_358](end_span)
-                     WA-AMT-PART1(WA-CO:15 - WA-CO) DELIMITED BY SIZE[span_359](start_span)[span_359](end_span)
-                     WA-AMT-PART2                   DELIMITED BY SIZE[span_360](start_span)[span_360](end_span)
-                     WA-NTRF                        DELIMITED BY SIZE[span_361](start_span)[span_361](end_span)
-                     WA-PART-BR-REF                 DELIMITED BY SIZE[span_362](start_span)[span_362](end_span)
-                     "//"                           DELIMITED BY SIZE[span_363](start_span)[span_363](end_span)
-                     WA-PART-CORR-REF               DELIMITED BY SIZE[span_364](start_span)[span_364](end_span)
-                     INTO WA-REC5[span_365](start_span)[span_365](end_span)
-           ELSE
-              STRING WA-R5                          DELIMITED BY SIZE[span_366](start_span)[span_366](end_span)
-                     WA-AMT-PART1(WA-CO:15 - WA-CO) DELIMITED BY SIZE[span_367](start_span)[span_367](end_span)
-                     WA-AMT-PART2                   DELIMITED BY SIZE[span_368](start_span)[span_368](end_span)
-                     WA-AMT-PART3(1:WB-CO)          DELIMITED BY SIZE[span_369](start_span)[span_369](end_span)
-                     WA-NTRF                        DELIMITED BY SIZE[span_370](start_span)[span_370](end_span)
-                     WA-PART-BR-REF                 DELIMITED BY SIZE[span_371](start_span)[span_371](end_span)
-                     "//"                           DELIMITED BY SIZE[span_372](start_span)[span_372](end_span)
-                     WA-PART-CORR-REF               DELIMITED BY SIZE[span_373](start_span)[span_373](end_span)
-                     INTO WA-REC5[span_374](start_span)[span_374](end_span)
-           END-IF[span_375](start_span)[span_375](end_span)
-           PERFORM WRITE-OUTPUT-LINE USING WA-REC5[span_376](start_span)[span_376](end_span)
+014490 A000-PROCESS.
+014500   MOVE "003" TO WS-INST-NO.[span_910](start_span)[span_910](end_span)[span_911](start_span)[span_911](end_span)
+014510   MOVE WS-ACT-NO TO WA-GLDM-ACT-NO.[span_912](start_span)[span_912](end_span)[span_913](start_span)[span_913](end_span)
+014520   MOVE WS-GLDM-KEY TO SQ-GLDM-KEY.[span_914](start_span)[span_914](end_span)[span_915](start_span)[span_915](end_span)
+014530   EXEC SQL[span_916](start_span)[span_916](end_span)[span_917](start_span)[span_917](end_span)
+014540       DECLARE GLDM_CUR1 CURSOR FOR[span_918](start_span)[span_918](end_span)[span_919](start_span)[span_919](end_span)
+014550       SELECT CUM_CURR_VAL FROM GLDM WHERE[span_920](start_span)[span_920](end_span)[span_921](start_span)[span_921](end_span)
+014560           KEY_1 = :SQ-GLDM-KEY[span_922](start_span)[span_922](end_span)[span_923](start_span)[span_923](end_span)
+014570   END-EXEC.[span_924](start_span)[span_924](end_span)[span_925](start_span)[span_925](end_span)
+014580   EXEC SQL OPEN GLDM_CUR1 END-EXEC.[span_926](start_span)[span_926](end_span)[span_927](start_span)[span_927](end_span)
+014590   PERFORM C003-GLDM-FETCH THRU C003-EXIT.[span_928](start_span)[span_928](end_span)[span_929](start_span)[span_929](end_span)
+014610   EXEC SQL CLOSE GLDM_CUR1 END-EXEC.[span_930](start_span)[span_930](end_span)[span_931](start_span)[span_931](end_span)
+014630 A000-EXIT.
+014640   EXIT.
 
-           MOVE SPACES TO WA-MFX-SR-NO-OUT
-           STRING WA-MFX-SR-NO DELIMITED BY SIZE INTO WA-MFX-SR-NO-OUT[span_377](start_span)[span_377](end_span)
-           PERFORM WRITE-OUTPUT-LINE USING WA-MFX-SR-NO-OUT.
-       A404-EXIT.
-           EXIT.
+014660 C003-GLDM-FETCH.
+014670     EXEC SQL[span_932](start_span)[span_932](end_span)[span_933](start_span)[span_933](end_span)
+014680       FETCH GLDM_CUR1 INTO[span_934](start_span)[span_934](end_span)[span_935](start_span)[span_935](end_span)
+014690            :WS-BGL-BALANCE[span_936](start_span)[span_936](end_span)[span_937](start_span)[span_937](end_span)
+014700     END-EXEC.[span_938](start_span)[span_938](end_span)[span_939](start_span)[span_939](end_span)
+014710    IF SQLCODE = ZEROS[span_940](start_span)[span_940](end_span)[span_941](start_span)[span_941](end_span)
+014720       MOVE  WS-BGL-BALANCE TO WA-OPEN-BAL[span_942](start_span)[span_942](end_span)[span_943](start_span)[span_943](end_span)
+014730       MOVE  WS-BGL-BALANCE TO WA-CLOS-AMNT[span_944](start_span)[span_944](end_span)[span_945](start_span)[span_945](end_span)
+014740    END-IF.
+014760 C003-EXIT.
+014770   EXIT.
 
-       A405-GENERATE-62.
-           IF FLAG1 = 0[span_378](start_span)[span_378](end_span)
-              COMPUTE WA-CLOS-AMNT = WA-OPEN-BAL-TEM + WA-TEMP-AMNT[span_379](start_span)[span_379](end_span)
-           END-IF[span_380](start_span)[span_380](end_span)
-           IF WA-CLOS-AMNT IS NEGATIVE[span_381](start_span)[span_381](end_span)
-              MOVE '-' TO WC-SIGN[span_382](start_span)[span_382](end_span)
-           ELSE
-              MOVE ' ' TO WC-SIGN[span_383](start_span)[span_383](end_span)
-           END-IF[span_384](start_span)[span_384](end_span)
-           IF WC-SIGN = '-[span_385](start_span)'[span_385](end_span)
-              MOVE 'D' TO WC-IND[span_386](start_span)[span_386](end_span)
-           ELSE
-              MOVE 'C' TO WC-IND[span_387](start_span)[span_387](end_span)
-           END-IF[span_388](start_span)[span_388](end_span)
+V75081  R100-READ-CARD-CURR.
+V75081     READ BGL-CURR AT END MOVE "Y" TO WA-ACCT-FOUND.[span_946](start_span)[span_946](end_span)[span_947](start_span)[span_947](end_span)
+V75081     IF WA-ACCT-FOUND NOT = 'Y[span_948](start_span)[span_949](start_span)'[span_948](end_span)[span_949](end_span)
+V75081          IF FD-BGL-NO = WS-ACT-NO AND FD-FROM-CURR = WS-CURR[span_950](start_span)[span_950](end_span)[span_951](start_span)[span_951](end_span)
+V75081             MOVE 'Y' TO WA-ACCT-FOUND[span_952](start_span)[span_952](end_span)[span_953](start_span)[span_953](end_span)
+V75081             MOVE FD-TO-CURR TO WS-CURR[span_954](start_span)[span_954](end_span)[span_955](start_span)[span_955](end_span)
+V75081          END-IF[span_956](start_span)[span_956](end_span)[span_957](start_span)[span_957](end_span)
+V75081     END-IF.
+V75081  R100-EXIT.
+V75081      EXIT.
 
-           STRING ":62F:"              DELIMITED BY SIZE[span_389](start_span)[span_389](end_span)
-                  WC-IND               DELIMITED BY SIZE[span_390](start_span)[span_390](end_span)
-                  WA-TRAN-YY           DELIMITED BY SIZE[span_391](start_span)[span_391](end_span)
-                  WA-TRAN-MM           DELIMITED BY SIZE[span_392](start_span)[span_392](end_span)
-                  WA-TRAN-DD           DELIMITED BY SIZE[span_393](start_span)[span_393](end_span)
-                  WS-CURR              DELIMITED BY SIZE[span_394](start_span)[span_394](end_span)
-                  INTO WA-R6[span_395](start_span)[span_395](end_span)
-           MOVE WA-CLOS-AMNT        TO WA-CLOS-AMNT1[span_396](start_span)[span_396](end_span)
-           MOVE WA-CLOS-AMNT1(1:14) TO WC-PART1[span_397](start_span)[span_397](end_span)
-           MOVE WA-CLOS-AMNT1(15:3) TO WC-PART3[span_398](start_span)[span_398](end_span)
-           PERFORM VARYING WE-A FROM 1 BY 1 UNTIL[span_399](start_span)[span_399](end_span)
-                   WC-PART1(WE-A:1) NOT = ' [span_400](start_span)'[span_400](end_span)
-           END-PERFORM[span_401](start_span)[span_401](end_span)
-           PERFORM VARYING WE-B FROM 3 BY -1[span_402](start_span)[span_402](end_span)
-                   UNTIL WC-PART3(WE-B:1) NOT = ZEROS[span_403](start_span)[span_403](end_span)
-           END-PERFORM[span_404](start_span)[span_404](end_span)
-           COMPUTE WE-B = WE-B + 16[span_405](start_span)[span_405](end_span)
-           IF WC-PART3 = ZEROS[span_406](start_span)[span_406](end_span)
-              COMPUTE WE-C = WE-B - WE-A[span_407](start_span)[span_407](end_span)
-              MOVE WA-CLOS-AMNT2(WE-A:WE-C) TO WA-CLOS-AMNT6[span_408](start_span)[span_408](end_span)
-           ELSE
-              COMPUTE WE-D = WE-B - WE-A[span_409](start_span)[span_409](end_span)
-              MOVE WA-CLOS-AMNT2(WE-A:WE-D) TO WA-CLOS-AMNT6[span_410](start_span)[span_410](end_span)
-           END-IF[span_411](start_span)[span_411](end_span)
-           IF WA-CLOS-AMNT = ZEROS[span_412](start_span)[span_412](end_span)
-              MOVE '0,' TO WA-CLOS-AMNT6[span_413](start_span)[span_413](end_span)
-           END-IF[span_414](start_span)[span_414](end_span)
-           MOVE WA-REC6 TO final-rec-temp
-           PERFORM WRITE-OUTPUT-LINE USING WA-REC6[span_415](start_span)[span_415](end_span)
-           PERFORM WRITE-OUTPUT-LINE USING WA-MESSAGE-END[span_416](start_span)[span_416](end_span)
-           MOVE 0 TO FLAG1.[span_417](start_span)[span_417](end_span)
-       A405-EXIT.
-           EXIT.
+PPPPPP P100-REFNO-NTRF.
+PPPPPP       EXEC SQL[span_958](start_span)[span_958](end_span)[span_959](start_span)[span_959](end_span)
+015560       SELECT /*+ INDEX(GECT GECTUK_04) */[span_960](start_span)[span_960](end_span)[span_961](start_span)[span_961](end_span)
+015570            substr(var_area,13,16)[span_962](start_span)[span_962](end_span)[span_963](start_span)[span_963](end_span)
+PPPPPP            INTO :WA-NARR-REF[span_964](start_span)[span_964](end_span)[span_965](start_span)[span_965](end_span)
+015590       FROM GECT[span_966](start_span)[span_966](end_span)[span_967](start_span)[span_967](end_span)
+015610       WHERE (INST_NO   = '003'      AND[span_968](start_span)[span_968](end_span)[span_969](start_span)[span_969](end_span)
+015630              ACCT_NO   = :WS-ACT-NO AND[span_970](start_span)[span_970](end_span)[span_971](start_span)[span_971](end_span)
+015640              TRAN_TYPE = '20'       AND[span_972](start_span)[span_972](end_span)[span_973](start_span)[span_973](end_span)
+015650              TRAN_DATE = :WA-DATE   AND[span_974](start_span)[span_974](end_span)[span_975](start_span)[span_975](end_span)
+015660              JRNL_NO   = :WA-JRNL)[span_976](start_span)[span_976](end_span)[span_977](start_span)[span_977](end_span)
+015670       END-EXEC.[span_978](start_span)[span_978](end_span)[span_979](start_span)[span_979](end_span)
+PPPPPP       IF SQLCODE = ZEROS OR 1403[span_980](start_span)[span_980](end_span)[span_981](start_span)[span_981](end_span)
+PPPPPP         IF WA-NARR-REF <> SPACES[span_982](start_span)[span_982](end_span)[span_983](start_span)[span_983](end_span)
+PPPPPP          MOVE WA-NARR-REF TO WA-PART-BR-REF[span_984](start_span)[span_984](end_span)[span_985](start_span)[span_985](end_span)
+PPPPPP         ELSE
+PPPPPP          MOVE WA-BR-REF   TO WA-PART-BR-REF[span_986](start_span)[span_986](end_span)[span_987](start_span)[span_987](end_span)
+PPPPPP         END-IF[span_988](start_span)[span_988](end_span)[span_989](start_span)[span_989](end_span)
+PPPPPP       ELSE
+PPPPPP         MOVE SPACES TO WA-PART-BR-REF[span_990](start_span)[span_990](end_span)[span_991](start_span)[span_991](end_span)
+PPPPPP       END-IF.[span_992](start_span)[span_992](end_span)[span_993](start_span)[span_993](end_span)
+PPPPPP P100-REFNO-EXIT.
+PPPPPP  EXIT.
 
-       A406-GENERATE-86.
-           MOVE WA-TRAN-CODE TO WA-R8-TRAN-CODE[span_418](start_span)[span_418](end_span)
-           MOVE 02           TO LINK-IN-CALL-CODE[span_419](start_span)[span_419](end_span)
-           MOVE '003'        TO LINK-IN-SOC-NO[span_420](start_span)[span_420](end_span)
-           MOVE WA-TRAN-CODE TO LINK-IN-TXCODE[span_421](start_span)[span_421](end_span)
-           CALL "UT0250" USING UT0250CA-CALL-AREA[span_422](start_span)[span_422](end_span)
-           IF LINK-OUT-STAT = "****[span_423](start_span)"[span_423](end_span)
-              MOVE LINK-IN-TXCODE TO WA-R8-TRAN-CODE[span_424](start_span)[span_424](end_span)
-              MOVE LINK-TRAN-DESC TO WA-R8-DESC-TEMP[span_425](start_span)[span_425](end_span)
-           END-IF[span_426](start_span)[span_426](end_span)
-           PERFORM WRITE-OUTPUT-LINE USING WA-REC8.[span_427](start_span)[span_427](end_span)
-       A406-EXIT.
-           EXIT.
-
-       Y200-SET-UP-EDIT-MASK.
-           MOVE 02    TO LINK-IN-CALL-CODE[span_428](start_span)[span_428](end_span)
-           MOVE 3     TO LINK-IN-SOC-NO[span_429](start_span)[span_429](end_span)
-           CALL "UT0250" USING UT0250CA-CALL-AREA.[span_430](start_span)[span_430](end_span)
-       Y200-EXIT.
-           EXIT.
-
-       Y010-UT0020-PARA.
-           MOVE 1 TO UT0020-FUNCTION[span_431](start_span)[span_431](end_span)
-           CALL "UT0020" USING UT0020-FUNCTION[span_432](start_span)[span_432](end_span)
-                               UT0020-DATE-AREA[span_433](start_span)[span_433](end_span)
-                               UT0020-BINARY-DATE.[span_434](start_span)[span_434](end_span)
-       Y010-EXIT.
-           EXIT.
-
-       P100-REFNO-NTRF.
-           EXEC SQL[span_435](start_span)[span_435](end_span)
-               SELECT /*+ INDEX(GECT GECTUK_04) */[span_436](start_span)[span_436](end_span)
-                      substr(var_area,13,16)[span_437](start_span)[span_437](end_span)
-               INTO  :WA-NARR-REF[span_438](start_span)[span_438](end_span)
-               FROM   GECT[span_439](start_span)[span_439](end_span)
-               WHERE (INST_NO   = '003'      AND[span_440](start_span)[span_440](end_span)
-                      ACCT_NO   = :WS-ACT-NO AND[span_441](start_span)[span_441](end_span)
-                      TRAN_TYPE = '20'       AND[span_442](start_span)[span_442](end_span)
-                      TRAN_DATE = :WA-DATE   AND[span_443](start_span)[span_443](end_span)
-                      JRNL_NO   = :WA-JRNL)[span_444](start_span)[span_444](end_span)
-           END-EXEC[span_445](start_span)[span_445](end_span)
-           IF SQLCODE = ZEROS OR 1403[span_446](start_span)[span_446](end_span)
-              IF WA-NARR-REF <> SPACES[span_447](start_span)[span_447](end_span)
-                 MOVE WA-NARR-REF TO WA-PART-BR-REF[span_448](start_span)[span_448](end_span)
-              ELSE
-                 MOVE WA-BR-REF   TO WA-PART-BR-REF[span_449](start_span)[span_449](end_span)
-              END-IF[span_450](start_span)[span_450](end_span)
-           ELSE
-              MOVE SPACES TO WA-PART-BR-REF[span_451](start_span)[span_451](end_span)
-           END-IF.[span_452](start_span)[span_452](end_span)
-       P100-REFNO-EXIT.
-           EXIT.
-
-       WRITE-OUTPUT-LINE.
-           ENTRY "WRITE-OUTPUT-LINE" USING LINE-IN.
-           ADD 1 TO LNK-STATEMENT-LINE-COUNT
-           IF LNK-STATEMENT-LINE-COUNT <= 500
-              MOVE LINE-IN TO LNK-REC-DATA(LNK-STATEMENT-LINE-COUNT)
+       AP100-APPEND-LINE.
+           ENTRY "AP100-APPEND-LINE" USING LINE-BUFFER.
+           ADD 1 TO MS-OUT-LINE-COUNT.
+           IF MS-OUT-LINE-COUNT <= 500
+              MOVE LINE-BUFFER TO MS-OUT-LINE(MS-OUT-LINE-COUNT)
            END-IF.
            EXIT.
+
+
+
+
+
+
+
+
+In the provided SSR940 code, the program executes as a daily batch job to generate SWIFT MT940 statement extract records for B@NCS/FNS Forex Nostro/Vostro accounts.  
+​Here is the step-by-step breakdown of what happens when the code runs:
+​1. Initialization and Setup (A000-MAIN-PARA)
+​Variable Reset: Resets all arithmetic accumulators, work variables, and record structures to spaces or zeroes.  
+​Database Connection: Calls DBIO with function 95 to sign on to the core database (A050-OPEN-DB).  
+​Current Date Retrieval: Calls legacy utility UT1999 and UT0030 to obtain the system's working date (DDMMCCYY) and converts it into a binary date format.  
+​Output File Creation: Constructs the output filename SSR940_DDMMCCYY under the directory $spool/Interfaces/SR0940/EXTRACTS/ and opens PRNTFILE as a line-sequential output file.  
+​Branch Ingestion: Reads the branch parameter card FDBRANCH into WA-FDBRCH. If opening FDBRANCH fails, the program halts (STOP RUN).  
+​Card Date Check: Calls UTCARD to check if a specific processing date was passed in WA-PARM; if not provided, it defaults to using today's binary date (WA-DATE).  
+​2. Julian Date & Sequence Management
+​Statement Number Calculation (A250-JULIAN): Calls UT0020 and UT0030 to convert the processing date to a Julian offset (days elapsed from January 1st of the working year) to derive the statement number (WA-STMNT-NO).  
+​Sequence Handling: Drops any existing Oracle sequence TXN_CMP_SSR (A503-DROP-SEQUENCE) and recreates it with START WITH 1 INCREMENT BY 1 (A500-CREATE-SEQUENCE) to generate unique transaction reference numbers (:20: tag).  
+​3. Master Account Processing Loop (A200-READ-FXAT)
+​Opens cursor CUR1 on the FXAT table to fetch Nostro/Vostro accounts belonging to institution '003', branch :WA-FDBRCH, and ID_CODE = 'NM'.  
+​For each account returned:
+​BIC Formatting (D400-FORMAT-SWIFT): Pads the account's 12-character BIC code with 'X' if spaces are present.  
+​Transaction Querying (T200-GET-GECT-AMT): Opens cursor GETDETL3 against table GECT to find all type '01' accounting transactions on that date (WA-DATE) for the account, ordered by REC_NO DESC.  
+​4. Statement Tag Generation (T300-FETCH-GECT-AMT & DO-PERFORM-TILL)
+​For every eligible transaction found:
+​Edit Mask Checks: Calls utility UT0022 using the transaction code (WA-TRAN-CODE). If bit 7 of the input table is set (WA-INPUT-PARAM-TABLE(7) = 1), the transaction is suppressed.  
+​Balance Calculation: Computes the opening balance as WA-BAL - WA-AMT1.  
+​Header Tags Emission (DO-PERFORM-FIELDS):
+​Selects TXN_CMP_SSR.NEXTVAL from DUAL.  
+​Formats and writes SWIFT Basic Header Block 1 and Application Header Block 2 ({1:F01...}{2:I940...}{4:) via A300-GENERATE-BIC.  
+​Generates Tag :20: (Transaction Reference Number).  
+​Generates Tag :25: (Account identification with check-digit computed via utility UT0151).  
+​Generates Tag :28C: (Statement/sequence number, e.g., :28C:NNNNN/00001).  
+​Generates Tag :60F: (Opening balance with Credit/Debit marker 'C' or 'D', transaction date YYMMDD, currency code, and formatted amount with comma decimal notation).  
+​Statement Line & Narration Tags Emission:
+​Queries GECT (TRAN_TYPE = '85') and FXTX to retrieve deal date, branch reference (WA-BR-REF), and correspondence reference (WA-CORR-REF).  
+​If transaction code is 20045 or 20055, executes P100-REFNO-NTRF to fetch narrative reference from GECT (TRAN_TYPE = '20') and replaces WA-PART-BR-REF.  
+​Generates Tag :61: (Value date, entry date, Debit/Credit indicator, transaction amount, transaction type NTRF, branch reference, and correspondence reference).  
+​Writes the MFX serial number on a subsequent record line.  
+​Generates Tag :86: (Calls UT0250 using WA-TRAN-CODE to obtain the transaction description and outputs :86:<TRAN_CODE>:<DESC>).  
+​5. Statement Tail & Closing Balance (A101-GENERATE-TAIL / A405-GENERATE-62)
+​Once all transactions for the account are read (or if no transactions exist, where it queries table GLDM for CUM_CURR_VAL as fallback opening/closing balance):  
+​Computes the final balance: WA-CLOS-AMNT = WA-OPEN-BAL-TEM + WA-TEMP-AMNT.  
+​Generates Tag :62F: (Final Closing Balance with 'C'/'D' sign, date, currency, and decimal amount).  
+​Writes the SWIFT message trailer delimiter "-}$" to conclude the MT940 block.  
+​6. Blocked Accounts Processing & Program Shutdown
+​Blocked BGL Accounts (A75082 / B100-READ-BLOCK-BGLS): Once cursor CUR1 finishes (SQLCODE = 1403), it reads blocked accounts defined in card file $card/SSRBGLBLOCK.card into an internal array and runs G100-GECT-DETAILS for each blocked account.  
+​Cleanup (A600-CLOSE & A800-STOP): Closes all SQL cursors (GETDETL1, GETDETL3, GETDETL4, CUR1), closes PRNTFILE, calls DBIO function 91 to disconnect from the database, and terminates execution (STOP RUN).  
